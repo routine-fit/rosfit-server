@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import * as yup from 'yup';
+import { Exercise } from '@prisma/client';
 
 import { CustomError } from 'src/interfaces/custom-error';
 
@@ -14,8 +15,7 @@ const muscleGroupValues = [
   'TRICEPS',
 ];
 
-export const exerciseSchema = yup.object({
-  id: yup.number().integer(),
+export const exerciseSchema = yup.object<Exercise>({
   name: yup.string().required(),
   muscleGroup: yup.string().oneOf(muscleGroupValues).required(),
   links: yup.object().shape({
@@ -26,18 +26,10 @@ export const exerciseSchema = yup.object({
       })
       .required(),
   }),
-  userId: yup
-    .object({
-      connect: yup
-        .object({
-          firebaseUid: yup.string().required(),
-        })
-        .required(),
-    })
-    .required(),
+  userInfoId: yup.string().optional(),
 });
 
-export const validateExerciseCreation = async (req: Request, res: Response, next: NextFunction) => {
+export const validateExercise = async (req: Request, res: Response, next: NextFunction) => {
   try {
     await exerciseSchema.validate(req.body, { abortEarly: false });
     return next();

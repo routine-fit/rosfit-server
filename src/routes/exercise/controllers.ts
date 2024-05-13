@@ -3,12 +3,19 @@ import { Request, Response } from 'express';
 import { prisma } from 'src/config/prisma';
 import { CustomError } from 'src/interfaces/custom-error';
 import { getActionSuccessMsg, missingId, notFound } from 'src/utils/messages';
+import { getFormattedQueryParams } from 'src/utils/query';
 
 const getAllExercises = async (req: Request, res: Response) => {
+  const { query, orderBy } = getFormattedQueryParams(req.query);
   const exercises = await prisma.exercise.findMany({
     include: {
       links: true,
     },
+    where: {
+      ...query,
+      userInfoId: req.firebaseType === 'NORMAL' ? req.firebaseUid : <string>query.userInfoId,
+    },
+    orderBy,
   });
   if (exercises.length > 0) {
     return res.status(200).json({
@@ -20,9 +27,37 @@ const getAllExercises = async (req: Request, res: Response) => {
   throw new CustomError(404, notFound('Exercises'));
 };
 
+const getAnExercise = async (req: Request, res: Response) => {
+  const id = req.params.id;
+  if (!id) {
+    throw new CustomError(400, missingId);
+  }
+
+  const exercise = await prisma.exercise.findFirst({
+    include: {
+      links: true,
+    },
+    where: {
+      id: Number(id),
+      userInfoId: req.firebaseType === 'NORMAL' ? req.firebaseUid : undefined,
+    },
+  });
+  if (exercise) {
+    return res.status(200).json({
+      message: getActionSuccessMsg('Exercise', 'found'),
+      data: exercise,
+      error: false,
+    });
+  }
+  throw new CustomError(404, notFound(`Exercise with id: ${id}`));
+};
+
 const createExercise = async (req: Request, res: Response) => {
   const createdExercise = await prisma.exercise.create({
-    data: req.body,
+    data: {
+      ...req.body,
+      userInfoId: req.firebaseType === 'NORMAL' ? req.firebaseUid : <string>req.body.userInfoId,
+    },
     include: {
       links: true,
     },
@@ -48,11 +83,13 @@ const editExercise = async (req: Request, res: Response) => {
   if (!exercise) {
     throw new CustomError(404, notFound('Exercise'));
   }
-
-  // TO-DO: Middleware to validate the data and structure the info.
+  // TODO: Review a better approach for updating the links
   const editedExercise = await prisma.exercise.update({
     where: { id: Number(id) },
-    data: { ...req.body },
+    data: { ...req.body, userInfoId: exercise.userInfoId },
+    include: {
+      links: true,
+    },
   });
 
   return res.status(200).json({
@@ -69,7 +106,10 @@ const deleteExercise = async (req: Request, res: Response) => {
   }
 
   const exercise = await prisma.exercise.findUnique({
-    where: { id: Number(id) },
+    where: {
+      id: Number(id),
+      userInfoId: req.firebaseType === 'NORMAL' ? req.firebaseUid : undefined,
+    },
     include: {
       links: true,
     },
@@ -92,6 +132,7 @@ const deleteExercise = async (req: Request, res: Response) => {
 
 export default {
   getAllExercises,
+  getAnExercise,
   createExercise,
   editExercise,
   deleteExercise,

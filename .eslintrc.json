@@ -50,7 +50,8 @@
         "varsIgnorePattern": "^_",
         "caughtErrorsIgnorePattern": "^_"
       }
-    ]
+    ],
+    "@typescript-eslint/no-explicit-any": ["warn"]
   },
   "ignorePatterns": ["dist"],
   "root": true

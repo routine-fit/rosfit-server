@@ -41,6 +41,8 @@ export const isAdmin = async (req: Request, res: Response, next: NextFunction) =
     throw forbiddenError;
   }
 
+  req.firebaseType = response.userType;
+
   return next();
 };
 
@@ -53,6 +55,7 @@ export const isUser = async (req: Request, res: Response, next: NextFunction) =>
   }
 
   req.firebaseUid = response.uid;
+  req.firebaseType = response.userType;
 
   return next();
 };

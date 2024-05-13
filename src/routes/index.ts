@@ -1,5 +1,7 @@
 import express from 'express';
 
+import { isUser } from 'src/middlewares/firebase';
+
 import authRouter from './auth';
 import exerciseRouter from './exercise';
 import routineRouter from './routine';
@@ -8,10 +10,10 @@ import userInfoRouter from './user-info';
 
 const router = express.Router();
 
-router.use('/auth', authRouter);
-router.use('/exercise', exerciseRouter);
-router.use('/routine', routineRouter);
-router.use('/training-preference', trainingPreferenceRouter);
-router.use('/user-info', userInfoRouter);
+router.use('/auth', isUser, authRouter);
+router.use('/exercise', isUser, exerciseRouter);
+router.use('/routine', isUser, routineRouter);
+router.use('/training-preference', isUser, trainingPreferenceRouter);
+router.use('/user-info', isUser, userInfoRouter);
 
 export default router;

@@ -1,14 +1,14 @@
 import express from 'express';
 
-import { validateExerciseCreation } from 'src/validations/exercise';
-
 import controllers from './controllers';
+import { validateExercise } from './validations';
 
 const router = express.Router();
 
 router.get('/', controllers.getAllExercises);
-router.post('/', validateExerciseCreation, controllers.createExercise);
-router.put('/:id', controllers.editExercise);
+router.post('/', validateExercise, controllers.createExercise);
+router.get('/:id', controllers.getAnExercise);
+router.put('/:id', validateExercise, controllers.editExercise);
 router.delete('/:id', controllers.deleteExercise);
 
 export default router;
