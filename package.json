@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && yarn babel",
+    "babel": "babel dist -d ./dist/",
     "start": "nodemon",
     "new-tab": "$(yarn bin ttab)",
     "start:local": "yarn set:docker && yarn new-tab -t 'Firebase Emulators' yarn set:emulators && yarn new-tab -t 'Server' yarn nodemon",
@@ -27,6 +28,8 @@
   "license": "ISC",
   "dependencies": {
     "@prisma/client": "5.5.2",
+    "babel-cli": "^6.26.0",
+    "babel-plugin-transform-inline-environment-variables": "^0.4.4",
     "cors": "^2.8.5",
     "dotenv": "^16.0.1",
     "express": "^4.18.1",
@@ -45,6 +48,7 @@
     "@types/supertest": "^2.0.12",
     "@typescript-eslint/eslint-plugin": "^6.10.0",
     "@typescript-eslint/parser": "^6.10.0",
+    "babel-plugin-module-resolver": "^4.1.0",
     "eslint": "^8.22.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-config-standard": "^17.0.0",
