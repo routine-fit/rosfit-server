@@ -1,4 +1,4 @@
-import { FirebaseUser } from '../../src/types/firebase';
+import { FirebaseUser } from '../../src/interfaces/firebase';
 
 export const firebaseUsers: FirebaseUser[] = [
   {

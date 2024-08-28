@@ -6,7 +6,9 @@
   "scripts": {
     "build": "tsc",
     "start": "nodemon",
-    "start:local": " yarn set:docker && ttab -t 'Firebase Emulators' yarn set:emulators && ttab -t 'Server' yarn nodemon",
+    "new-tab": "$(yarn bin ttab)",
+    "start:local": "yarn set:docker && yarn new-tab -t 'Firebase Emulators' yarn set:emulators && yarn new-tab -t 'Server' yarn nodemon",
+    "start:dev": "yarn set:docker && yarn new-tab -t 'Server' yarn nodemon",
     "start:build": "node dist/index.js",
     "test": "jest",
     "type-check": "tsc --noEmit",
@@ -17,11 +19,9 @@
     "prepare": "husky install",
     "set:emulators": "firebase emulators:start",
     "set:docker": "docker-compose up -d && prisma db push",
-    "seed": "prisma db seed"
-  },
-  "prisma": {
     "seed": "ts-node --transpile-only prisma/seed/index.ts"
   },
+  "prisma": {},
   "keywords": [],
   "author": "",
   "license": "ISC",
