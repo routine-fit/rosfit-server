@@ -1,18 +1,24 @@
 import { Request, Response } from 'express';
+import { Prisma } from '@prisma/client';
 
 import { prisma } from 'src/config/prisma';
 import { CustomError } from 'src/interfaces/custom-error';
+import { RoutineExerciseInput } from 'src/interfaces/routine';
 import { getActionSuccessMsg, missingId, notFound } from 'src/utils/messages';
 
 const getAllRoutines = async (req: Request, res: Response) => {
   const routines = await prisma.routine.findMany({
     include: {
-      userId: true,
+      exercises: {
+        include: {
+          series: true,
+        },
+      },
     },
   });
   if (routines.length > 0) {
     return res.status(200).json({
-      message: getActionSuccessMsg('routines', 'found'),
+      message: getActionSuccessMsg('Routines', 'found'),
       data: routines,
       error: false,
     });
@@ -20,16 +26,46 @@ const getAllRoutines = async (req: Request, res: Response) => {
   throw new CustomError(404, notFound('routines'));
 };
 
-const createRoutine = async (req: Request, res: Response) => {
+const createRoutine = async (req: Request<object, object, RoutineExerciseInput>, res: Response) => {
+  const { name, type, exercises } = req.body;
+
+  const routineExercises: Prisma.RoutineExerciseCreateWithoutRoutineInput[] = exercises.map(
+    (exercise) => ({
+      exercise: {
+        connect: {
+          id: exercise.id,
+        },
+      },
+      seriesAmount: exercise.series.length,
+      repetitions: exercise.repetitions,
+      restTimeSecs: exercise.restTimeSecs,
+      variableWeight: exercise.variableWeight,
+      series: {
+        create: exercise.series,
+      },
+    }),
+  );
+
   const createdRoutine = await prisma.routine.create({
-    data: req.body,
+    data: {
+      name,
+      type,
+      userInfoId: req.firebaseUid,
+      exercises: {
+        create: routineExercises,
+      },
+    },
     include: {
-      userId: true,
+      exercises: {
+        include: {
+          series: true,
+        },
+      },
     },
   });
 
   return res.status(201).json({
-    message: getActionSuccessMsg('Exercise', 'created'),
+    message: getActionSuccessMsg('Routine', 'created'),
     data: createdRoutine,
     error: false,
   });
@@ -42,7 +78,7 @@ const editRoutine = async (req: Request, res: Response) => {
   }
 
   const routine = await prisma.routine.findUnique({
-    where: { id: Number(id) },
+    where: { id },
   });
 
   if (!routine) {
@@ -50,7 +86,7 @@ const editRoutine = async (req: Request, res: Response) => {
   }
 
   const editedRoutine = await prisma.routine.update({
-    where: { id: Number(id) },
+    where: { id },
     data: { ...req.body },
   });
 
@@ -68,7 +104,7 @@ const deleteRoutine = async (req: Request, res: Response) => {
   }
 
   const routine = await prisma.routine.findUnique({
-    where: { id: Number(id) },
+    where: { id },
   });
 
   if (!routine) {
@@ -76,7 +112,7 @@ const deleteRoutine = async (req: Request, res: Response) => {
   }
 
   const deletedRoutine = await prisma.routine.delete({
-    where: { id: Number(id) },
+    where: { id },
   });
 
   return res.status(200).json({

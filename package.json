@@ -64,5 +64,6 @@
     "tsconfig-paths": "^4.1.0",
     "ttab": "^0.8.0",
     "typescript": "^5.2.2"
-  }
+  },
+  "packageManager": "yarn@4.4.1"
 }

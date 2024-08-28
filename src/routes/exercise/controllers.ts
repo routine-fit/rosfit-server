@@ -38,7 +38,7 @@ const getAnExercise = async (req: Request, res: Response) => {
       links: true,
     },
     where: {
-      id: Number(id),
+      id,
       userInfoId: req.firebaseType === 'NORMAL' ? req.firebaseUid : undefined,
     },
   });
@@ -77,7 +77,7 @@ const editExercise = async (req: Request, res: Response) => {
   }
 
   const exercise = await prisma.exercise.findUnique({
-    where: { id: Number(id) },
+    where: { id },
   });
 
   if (!exercise) {
@@ -85,7 +85,7 @@ const editExercise = async (req: Request, res: Response) => {
   }
   // TODO: Review a better approach for updating the links
   const editedExercise = await prisma.exercise.update({
-    where: { id: Number(id) },
+    where: { id },
     data: { ...req.body, userInfoId: exercise.userInfoId },
     include: {
       links: true,
@@ -107,7 +107,7 @@ const deleteExercise = async (req: Request, res: Response) => {
 
   const exercise = await prisma.exercise.findUnique({
     where: {
-      id: Number(id),
+      id,
       userInfoId: req.firebaseType === 'NORMAL' ? req.firebaseUid : undefined,
     },
     include: {
@@ -120,7 +120,7 @@ const deleteExercise = async (req: Request, res: Response) => {
   }
 
   const deletedExercise = await prisma.exercise.delete({
-    where: { id: Number(id) },
+    where: { id },
   });
 
   return res.status(200).json({

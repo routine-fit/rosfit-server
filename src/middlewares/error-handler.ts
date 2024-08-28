@@ -31,6 +31,7 @@ const errorHandler = (
   });
 
   delete customError?.data?.label;
+  if (customError.status === 500) delete customError?.data;
 
   res.status((customError as CustomError).status).json({
     message: customError.message,

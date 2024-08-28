@@ -1,6 +1,6 @@
 export class CustomError extends Error {
-  status!: number;
-  message!: string;
+  status: number;
+  message: string;
   data?: undefined | Record<string, unknown>;
 
   constructor(
