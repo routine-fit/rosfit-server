@@ -8,7 +8,6 @@ export interface Exercise {
   series: Serie[];
   repetitions: number;
   restTimeSecs: number;
-  variableWeight: boolean;
 }
 
 export interface RoutineExerciseInput {

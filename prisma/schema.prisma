@@ -102,16 +102,14 @@ enum Intensity {
 }
 
 model RoutineExercise {
-  id             String                  @id @default(uuid())
-  routineId      String
-  routine        Routine                 @relation(fields: [routineId], references: [id])
-  exerciseId     String
-  exercise       Exercise                @relation(fields: [exerciseId], references: [id])
-  seriesAmount   Int
-  repetitions    Int
-  restTimeSecs   Int                     @default(30)
-  variableWeight Boolean
-  series         SeriesRoutineExercise[]
+  id           String                  @id @default(uuid())
+  routineId    String
+  routine      Routine                 @relation(fields: [routineId], references: [id])
+  exerciseId   String
+  exercise     Exercise                @relation(fields: [exerciseId], references: [id])
+  repetitions  Int
+  restTimeSecs Int                     @default(30)
+  series       SeriesRoutineExercise[]
 }
 
 model SeriesRoutineExercise {
