@@ -114,8 +114,8 @@ model RoutineExercise {
 
 model SeriesRoutineExercise {
   id                String          @id @default(uuid())
-  serieNumber       Int // 1 to N
   weight            Float
+  weightMeasure     String          @default("kg")
   routineExerciseId String
   routineExercise   RoutineExercise @relation(fields: [routineExerciseId], references: [id])
 }
