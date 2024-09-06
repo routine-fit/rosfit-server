@@ -1,8 +1,7 @@
 import express from 'express';
 
-import { validateRoutineCreation } from 'src/validations/routine';
-
 import controllers from './controllers';
+import { validateRoutineCreation } from './validations';
 
 const router = express.Router();
 

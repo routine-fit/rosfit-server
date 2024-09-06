@@ -6,16 +6,16 @@ import { CustomError } from 'src/interfaces/custom-error';
 import { RoutineExerciseInput } from 'src/interfaces/routine';
 import { getActionSuccessMsg, missingId, notFound } from 'src/utils/messages';
 
-import { routineExerciseInclude } from './constants';
+import { formatExercisesInRoutine, routineExerciseSelect } from './utils';
 
 const getAllRoutines = async (req: Request, res: Response) => {
   const routines = await prisma.routine.findMany({
-    include: routineExerciseInclude,
+    select: routineExerciseSelect,
   });
   if (routines.length > 0) {
     return res.status(200).json({
       message: getActionSuccessMsg('Routines', 'found'),
-      data: routines,
+      data: routines.map(formatExercisesInRoutine),
       error: false,
     });
   }
@@ -30,13 +30,13 @@ const getRoutineById = async (req: Request, res: Response) => {
 
   const routine = await prisma.routine.findUnique({
     where: { id },
-    include: routineExerciseInclude,
+    select: routineExerciseSelect,
   });
 
   if (routine) {
     return res.status(200).json({
       message: getActionSuccessMsg('Routine', 'found'),
-      data: routine,
+      data: formatExercisesInRoutine(routine),
       error: false,
     });
   }
@@ -55,11 +55,19 @@ const createRoutine = async (req: Request<object, object, RoutineExerciseInput>,
       },
       repetitions: exercise.repetitions,
       restTimeSecs: exercise.restTimeSecs,
+      order: exercise.order,
       series: {
         create: exercise.series,
       },
     }),
   );
+
+  // TODO: Business rules validations and return errors
+  /**
+   * Validate one type of exercise per routine
+   * Validate one order value per exercise
+   * Validate one order value per serie
+   */
 
   const createdRoutine = await prisma.routine.create({
     data: {
@@ -70,7 +78,7 @@ const createRoutine = async (req: Request<object, object, RoutineExerciseInput>,
         create: routineExercises,
       },
     },
-    include: routineExerciseInclude,
+    select: routineExerciseSelect,
   });
 
   return res.status(201).json({
@@ -107,20 +115,16 @@ const editRoutine = async (
   const { name, type, exercises } = req.body;
 
   const routineExercisesToBeRemoved = routine.exercises.filter(
-    (savedExercise) =>
-      !exercises.find((exercise) => exercise.exerciseId === savedExercise.exerciseId),
+    (savedExercise) => !exercises.some((exercise) => exercise.id === savedExercise.id),
   );
 
-  await prisma.routineExercise.deleteMany({
-    where: {
-      id: {
-        in: routineExercisesToBeRemoved.map(({ id }) => id),
-      },
-    },
-  });
+  if (routineExercisesToBeRemoved.length > 0) {
+    await prisma.routineExercise.deleteMany({
+      where: { id: { in: routineExercisesToBeRemoved.map(({ id }) => id) } },
+    });
+  }
 
-  for (let i = 0; i < exercises.length; i++) {
-    const exercise = exercises[i];
+  const exercisePromises = exercises.map(async (exercise) => {
     const { series, id: routineExerciseId, routineId: _routineId, ...exerciseRest } = exercise;
 
     if (routineExerciseId) {
@@ -130,39 +134,40 @@ const editRoutine = async (
 
       if (routineExerciseSaved) {
         const seriesToBeRemoved = routineExerciseSaved.series.filter(
-          (savedSerie) => !series.find((serie) => serie.id === savedSerie.id),
+          (savedSerie) => !series.some((serie) => serie.id === savedSerie.id),
         );
 
-        await prisma.seriesRoutineExercise.deleteMany({
-          where: {
-            id: {
-              in: seriesToBeRemoved.map(({ id }) => id),
-            },
-          },
-        });
+        if (seriesToBeRemoved.length > 0) {
+          await prisma.seriesRoutineExercise.deleteMany({
+            where: { id: { in: seriesToBeRemoved.map(({ id }) => id) } },
+          });
+        }
       }
 
-      await prisma.routineExercise.update({
-        where: { id: routineExerciseId },
-        data: exerciseRest,
-      });
-
-      for (let serieI = 0; serieI < series.length; serieI++) {
-        const serie = series[serieI];
+      const seriesPromises = series.map((serie) => {
         const { id: serieId, ...restSerie } = serie;
+
         if (serieId) {
-          await prisma.seriesRoutineExercise.update({
+          return prisma.seriesRoutineExercise.update({
             where: { id: serieId },
             data: restSerie,
           });
         } else {
-          await prisma.seriesRoutineExercise.create({
+          return prisma.seriesRoutineExercise.create({
             data: { ...restSerie, routineExerciseId },
           });
         }
-      }
+      });
+
+      return Promise.all([
+        prisma.routineExercise.update({
+          where: { id: routineExerciseId },
+          data: exerciseRest,
+        }),
+        ...seriesPromises,
+      ]);
     } else {
-      await prisma.routineExercise.create({
+      return prisma.routineExercise.create({
         data: {
           ...exerciseRest,
           routineId: routine.id,
@@ -172,17 +177,19 @@ const editRoutine = async (
         },
       });
     }
-  }
+  });
+
+  await Promise.all(exercisePromises);
 
   const editedRoutine = await prisma.routine.update({
     where: { id },
     data: { name, type },
-    include: routineExerciseInclude,
+    select: routineExerciseSelect,
   });
 
   return res.status(200).json({
     message: getActionSuccessMsg('Routine', 'updated'),
-    data: editedRoutine,
+    data: formatExercisesInRoutine(editedRoutine),
     error: false,
   });
 };
@@ -203,12 +210,12 @@ const deleteRoutine = async (req: Request, res: Response) => {
 
   const deletedRoutine = await prisma.routine.delete({
     where: { id },
-    include: routineExerciseInclude,
+    select: routineExerciseSelect,
   });
 
   return res.status(200).json({
     message: getActionSuccessMsg('Routine', 'deleted'),
-    data: deletedRoutine,
+    data: formatExercisesInRoutine(deletedRoutine),
     error: false,
   });
 };
