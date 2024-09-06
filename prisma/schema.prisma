@@ -104,18 +104,23 @@ enum Intensity {
 model RoutineExercise {
   id           String                  @id @default(uuid())
   routineId    String
-  routine      Routine                 @relation(fields: [routineId], references: [id])
+  routine      Routine                 @relation(fields: [routineId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   exerciseId   String
-  exercise     Exercise                @relation(fields: [exerciseId], references: [id])
+  exercise     Exercise                @relation(fields: [exerciseId], references: [id], onUpdate: Cascade)
   repetitions  Int
   restTimeSecs Int                     @default(30)
   series       SeriesRoutineExercise[]
+
+  @@unique([routineId, exerciseId])
 }
 
 model SeriesRoutineExercise {
   id                String          @id @default(uuid())
+  order             Int
   weight            Float
   weightMeasure     String          @default("kg")
   routineExerciseId String
-  routineExercise   RoutineExercise @relation(fields: [routineExerciseId], references: [id])
+  routineExercise   RoutineExercise @relation(fields: [routineExerciseId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@unique([order, routineExerciseId])
 }
