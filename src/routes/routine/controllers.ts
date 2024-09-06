@@ -22,6 +22,27 @@ const getAllRoutines = async (req: Request, res: Response) => {
   throw new CustomError(404, notFound('routines'));
 };
 
+const getRoutineById = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  if (!id) {
+    throw new CustomError(400, missingId);
+  }
+
+  const routine = await prisma.routine.findUnique({
+    where: { id },
+    include: routineExerciseInclude,
+  });
+
+  if (routine) {
+    return res.status(200).json({
+      message: getActionSuccessMsg('Routine', 'found'),
+      data: routine,
+      error: false,
+    });
+  }
+  throw new CustomError(404, notFound('routine'));
+};
+
 const createRoutine = async (req: Request<object, object, RoutineExerciseInput>, res: Response) => {
   const { name, type, exercises } = req.body;
 
@@ -194,6 +215,7 @@ const deleteRoutine = async (req: Request, res: Response) => {
 
 export default {
   getAllRoutines,
+  getRoutineById,
   createRoutine,
   editRoutine,
   deleteRoutine,
