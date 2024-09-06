@@ -13,6 +13,7 @@ export interface Exercise {
   series: Serie[];
   repetitions: number;
   restTimeSecs: number;
+  order: number;
 }
 
 export interface RoutineExerciseInput {

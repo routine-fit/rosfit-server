@@ -8,21 +8,20 @@ export const routineSchemaCreation = yup
   .object<RoutineExerciseInput>({
     name: yup.string().required(),
     type: yup.string().required(),
-    // TODO: Validate one exerciseId on the list
     exercises: yup
       .array()
       .of(
         yup.object<Exercise>({
-          id: yup.string().optional(),
           exerciseId: yup.string().required(),
           repetitions: yup.number().required(),
+          order: yup.number().min(1).required(),
           restTimeSecs: yup.number().optional(),
           series: yup
             .array()
             .of(
               yup.object<Serie>({
                 id: yup.string().optional(),
-                order: yup.number().required(),
+                order: yup.number().min(1).required(),
                 weight: yup.number().required(),
                 weightMeasure: yup.string().optional(),
                 routineExerciseId: yup.string().optional(),

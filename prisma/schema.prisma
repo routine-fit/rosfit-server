@@ -110,8 +110,10 @@ model RoutineExercise {
   repetitions  Int
   restTimeSecs Int                     @default(30)
   series       SeriesRoutineExercise[]
+  order        Int
 
   @@unique([routineId, exerciseId])
+  @@unique([routineId, order])
 }
 
 model SeriesRoutineExercise {
