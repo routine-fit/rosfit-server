@@ -6,15 +6,11 @@ import { CustomError } from 'src/interfaces/custom-error';
 import { RoutineExerciseInput } from 'src/interfaces/routine';
 import { getActionSuccessMsg, missingId, notFound } from 'src/utils/messages';
 
+import { routineExerciseInclude } from './constants';
+
 const getAllRoutines = async (req: Request, res: Response) => {
   const routines = await prisma.routine.findMany({
-    include: {
-      exercises: {
-        include: {
-          series: true,
-        },
-      },
-    },
+    include: routineExerciseInclude,
   });
   if (routines.length > 0) {
     return res.status(200).json({
@@ -33,7 +29,7 @@ const createRoutine = async (req: Request<object, object, RoutineExerciseInput>,
     (exercise) => ({
       exercise: {
         connect: {
-          id: exercise.id,
+          id: exercise.exerciseId,
         },
       },
       repetitions: exercise.repetitions,
@@ -53,13 +49,7 @@ const createRoutine = async (req: Request<object, object, RoutineExerciseInput>,
         create: routineExercises,
       },
     },
-    include: {
-      exercises: {
-        include: {
-          series: true,
-        },
-      },
-    },
+    include: routineExerciseInclude,
   });
 
   return res.status(201).json({
@@ -69,7 +59,10 @@ const createRoutine = async (req: Request<object, object, RoutineExerciseInput>,
   });
 };
 
-const editRoutine = async (req: Request, res: Response) => {
+const editRoutine = async (
+  req: Request<{ id: string }, object, RoutineExerciseInput>,
+  res: Response,
+) => {
   const { id } = req.params;
   if (!id) {
     throw new CustomError(400, missingId);
@@ -77,15 +70,93 @@ const editRoutine = async (req: Request, res: Response) => {
 
   const routine = await prisma.routine.findUnique({
     where: { id },
+    include: {
+      exercises: {
+        include: {
+          series: true,
+        },
+      },
+    },
   });
 
   if (!routine) {
     throw new CustomError(404, notFound('Routine'));
   }
 
+  const { name, type, exercises } = req.body;
+
+  const routineExercisesToBeRemoved = routine.exercises.filter(
+    (savedExercise) =>
+      !exercises.find((exercise) => exercise.exerciseId === savedExercise.exerciseId),
+  );
+
+  await prisma.routineExercise.deleteMany({
+    where: {
+      id: {
+        in: routineExercisesToBeRemoved.map(({ id }) => id),
+      },
+    },
+  });
+
+  for (let i = 0; i < exercises.length; i++) {
+    const exercise = exercises[i];
+    const { series, id: routineExerciseId, routineId: _routineId, ...exerciseRest } = exercise;
+
+    if (routineExerciseId) {
+      const routineExerciseSaved = routine.exercises.find(
+        (routineExercise) => routineExercise.id === routineExerciseId,
+      );
+
+      if (routineExerciseSaved) {
+        const seriesToBeRemoved = routineExerciseSaved.series.filter(
+          (savedSerie) => !series.find((serie) => serie.id === savedSerie.id),
+        );
+
+        await prisma.seriesRoutineExercise.deleteMany({
+          where: {
+            id: {
+              in: seriesToBeRemoved.map(({ id }) => id),
+            },
+          },
+        });
+      }
+
+      await prisma.routineExercise.update({
+        where: { id: routineExerciseId },
+        data: exerciseRest,
+      });
+
+      for (let serieI = 0; serieI < series.length; serieI++) {
+        const serie = series[serieI];
+        const { id: serieId, ...restSerie } = serie;
+        if (serieId) {
+          await prisma.seriesRoutineExercise.update({
+            where: { id: serieId },
+            data: restSerie,
+          });
+        } else {
+          await prisma.seriesRoutineExercise.create({
+            data: { ...restSerie, routineExerciseId },
+          });
+        }
+      }
+    } else {
+      await prisma.routineExercise.create({
+        data: {
+          ...exerciseRest,
+          routineId: routine.id,
+          series: {
+            create: series,
+          },
+        },
+      });
+    }
+  }
+
   const editedRoutine = await prisma.routine.update({
     where: { id },
-    data: { ...req.body },
+    data: { name, type },
+    include: routineExerciseInclude,
   });
 
   return res.status(200).json({
@@ -111,6 +182,7 @@ const deleteRoutine = async (req: Request, res: Response) => {
 
   const deletedRoutine = await prisma.routine.delete({
     where: { id },
+    include: routineExerciseInclude,
   });
 
   return res.status(200).json({

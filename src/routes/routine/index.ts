@@ -8,7 +8,7 @@ const router = express.Router();
 
 router.get('/', controllers.getAllRoutines);
 router.post('/', validateRoutineCreation, controllers.createRoutine);
-router.put('/:id', controllers.editRoutine);
+router.put('/:id', validateRoutineCreation, controllers.editRoutine);
 router.delete('/:id', controllers.deleteRoutine);
 
 export default router;
