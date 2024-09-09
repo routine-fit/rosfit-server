@@ -83,7 +83,7 @@ const createRoutine = async (req: Request<object, object, RoutineExerciseInput>,
 
   return res.status(201).json({
     message: getActionSuccessMsg('Routine', 'created'),
-    data: createdRoutine,
+    data: formatExercisesInRoutine(createdRoutine),
     error: false,
   });
 };
