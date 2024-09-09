@@ -1,0 +1,16 @@
+{
+	"plugins": [
+		"transform-inline-environment-variables", // inject envs inline
+		[
+			"module-resolver",
+			{
+				"root": [
+					"."
+				],
+				"alias": {
+					"src": "./dist/"
+				}
+			}
+		]
+	]
+}

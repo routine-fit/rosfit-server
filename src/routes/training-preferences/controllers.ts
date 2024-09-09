@@ -42,7 +42,7 @@ const editTrainingPreference = async (req: Request, res: Response) => {
   }
 
   const trainingPreference = await prisma.trainingPreference.findUnique({
-    where: { id: Number(id) },
+    where: { id },
   });
 
   if (!trainingPreference) {
@@ -50,7 +50,7 @@ const editTrainingPreference = async (req: Request, res: Response) => {
   }
 
   const editedtrainingPreference = await prisma.trainingPreference.update({
-    where: { id: Number(id) },
+    where: { id },
     data: { ...req.body },
   });
 
@@ -68,7 +68,7 @@ const deleteTrainingPreference = async (req: Request, res: Response) => {
   }
 
   const trainingPreference = await prisma.trainingPreference.findUnique({
-    where: { id: Number(id) },
+    where: { id },
     include: {
       user: true,
     },
@@ -79,7 +79,7 @@ const deleteTrainingPreference = async (req: Request, res: Response) => {
   }
 
   const deletedTrainingPreference = await prisma.trainingPreference.delete({
-    where: { id: Number(id) },
+    where: { id },
   });
 
   return res.status(200).json({

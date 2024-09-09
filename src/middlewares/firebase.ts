@@ -3,6 +3,7 @@ import { DecodedIdToken } from 'firebase-admin/lib/auth/token-verifier';
 
 import firebase from 'src/config/firebase';
 import { CustomError } from 'src/interfaces/custom-error';
+import { ApiCodes } from 'src/utils/messages';
 
 const forbiddenError = new CustomError(403, 'Forbidden. You must have permission to access.', {
   type: 'TOKEN_FORBIDDEN',
@@ -17,13 +18,13 @@ const getTokenDecoded = async (token: string) => {
   } catch (error: any) {
     if (error?.errorInfo?.code === 'auth/id-token-expired') {
       throw new CustomError(401, 'Unauthorized. Firebase ID token has expired.', {
-        type: 'TOKEN_EXPIRED',
+        type: ApiCodes.TOKEN_EXPIRED,
         label: 'firebase',
       });
     }
     if (error?.errorInfo?.code === 'auth/argument-error') {
       throw new CustomError(401, 'Unauthorized. Provide a token.', {
-        type: 'NO_TOKEN',
+        type: ApiCodes.INVALID_TOKEN,
         label: 'firebase',
       });
     }

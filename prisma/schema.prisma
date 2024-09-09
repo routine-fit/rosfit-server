@@ -22,16 +22,16 @@ model UserInfo {
 }
 
 model GrowthRecord {
-  id         Int      @id @default(autoincrement())
+  id         String   @id @default(uuid())
   weight     Float
   height     Float
   createdAt  DateTime
-  userInfoId String
+  userInfoId String   @unique
   user       UserInfo @relation(fields: [userInfoId], references: [firebaseUid])
 }
 
 model TrainingPreference {
-  id         Int          @id @default(autoincrement())
+  id         String       @id @default(uuid())
   type       TrainingType
   time       Int
   intensity  Intensity
@@ -40,27 +40,29 @@ model TrainingPreference {
 }
 
 model ExerciseLink {
-  id         Int      @id @default(autoincrement())
+  id         String   @id @default(uuid())
   url        String
-  exerciseId Int
+  exerciseId String
   exercise   Exercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
 }
 
 model Exercise {
-  id          Int            @id @default(autoincrement())
+  id          String            @id @default(uuid())
   name        String
   muscleGroup MuscleGroup
   links       ExerciseLink[]
   userInfoId  String
-  userId      UserInfo       @relation(fields: [userInfoId], references: [firebaseUid])
+  user        UserInfo          @relation(fields: [userInfoId], references: [firebaseUid])
+  routines    RoutineExercise[]
 }
 
 model Routine {
-  id         Int      @id @default(autoincrement())
+  id         String            @id @default(uuid())
   name       String
   type       String
   userInfoId String
-  userId     UserInfo @relation(fields: [userInfoId], references: [firebaseUid])
+  user       UserInfo          @relation(fields: [userInfoId], references: [firebaseUid])
+  exercises  RoutineExercise[]
 }
 
 enum MuscleGroup {
@@ -97,4 +99,23 @@ enum Intensity {
   HIGH
   MEDIUM
   LOW
+}
+
+model RoutineExercise {
+  id           String                  @id @default(uuid())
+  routineId    String
+  routine      Routine                 @relation(fields: [routineId], references: [id])
+  exerciseId   String
+  exercise     Exercise                @relation(fields: [exerciseId], references: [id])
+  repetitions  Int
+  restTimeSecs Int                     @default(30)
+  series       SeriesRoutineExercise[]
+}
+
+model SeriesRoutineExercise {
+  id                String          @id @default(uuid())
+  weight            Float
+  weightMeasure     String          @default("kg")
+  routineExerciseId String
+  routineExercise   RoutineExercise @relation(fields: [routineExerciseId], references: [id])
 }

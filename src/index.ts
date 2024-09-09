@@ -11,7 +11,7 @@ const port = process.env.PORT || 3001;
 app.listen(port, () => {
   logger.log({
     level: 'info',
-    message: `⚡️ Server is running at http://localhost:${port} ✅`,
+    message: `⚡️ Server is running at http://${process.env.BASE_URL || 'localhost'}:${port} ✅`,
     label: 'server',
   });
 });

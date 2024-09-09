@@ -1,6 +1,6 @@
 import firebaseAdmin from 'firebase-admin';
 
-import { FirebaseUser } from '../../src/types/firebase';
+import { FirebaseUser } from '../../src/interfaces/firebase';
 import data from '../data';
 import { padMessage } from './utils';
 
