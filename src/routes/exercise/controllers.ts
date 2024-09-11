@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { Prisma } from '@prisma/client';
 
 import { prisma } from 'src/config/prisma';
 import { CustomError } from 'src/interfaces/custom-error';
@@ -13,7 +14,7 @@ const getAllExercises = async (req: Request, res: Response) => {
     },
     where: {
       ...query,
-      userInfoId: req.firebaseType === 'NORMAL' ? req.firebaseUid : <string>query.userInfoId,
+      userInfoId: req.firebaseUid,
     },
     orderBy,
   });
@@ -27,7 +28,7 @@ const getAllExercises = async (req: Request, res: Response) => {
   throw new CustomError(404, notFound('Exercises'));
 };
 
-const getAnExercise = async (req: Request, res: Response) => {
+const getExerciseById = async (req: Request, res: Response) => {
   const id = req.params.id;
   if (!id) {
     throw new CustomError(400, missingId);
@@ -53,10 +54,19 @@ const getAnExercise = async (req: Request, res: Response) => {
 };
 
 const createExercise = async (req: Request, res: Response) => {
+  const exercise: Prisma.ExerciseCreateInput = req.body;
+
   const createdExercise = await prisma.exercise.create({
     data: {
-      ...req.body,
-      userInfoId: req.firebaseType === 'NORMAL' ? req.firebaseUid : <string>req.body.userInfoId,
+      ...exercise,
+      user: {
+        connect: {
+          firebaseUid:
+            req.firebaseType === 'NORMAL'
+              ? req.firebaseUid
+              : req.body.userInfoId || req.firebaseUid,
+        },
+      },
     },
     include: {
       links: true,
@@ -132,7 +142,7 @@ const deleteExercise = async (req: Request, res: Response) => {
 
 export default {
   getAllExercises,
-  getAnExercise,
+  getExerciseById,
   createExercise,
   editExercise,
   deleteExercise,

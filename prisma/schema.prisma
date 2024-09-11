@@ -14,7 +14,7 @@ model UserInfo {
   lastName           String
   birthDate          DateTime
   gender             Gender
-  pushNotification   Boolean
+  pushNotification   Boolean             @default(false)
   growthRecords      GrowthRecord[]
   routines           Routine[]
   exercises          Exercise[]
@@ -113,7 +113,6 @@ model RoutineExercise {
   order        Int
 
   @@unique([routineId, exerciseId])
-  @@unique([routineId, order])
 }
 
 model SeriesRoutineExercise {

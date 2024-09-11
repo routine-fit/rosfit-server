@@ -17,18 +17,13 @@ export const routineExerciseSelect = Prisma.validator<Prisma.RoutineSelect>()({
           userInfoId: false,
         },
       },
+      id: true,
       repetitions: true,
       restTimeSecs: true,
       order: true,
       series: {
         orderBy: {
           order: 'asc',
-        },
-        select: {
-          id: true,
-          order: true,
-          weight: true,
-          weightMeasure: true,
         },
       },
     },
@@ -42,6 +37,7 @@ export const formatExercisesInRoutine = (
 ) => ({
   ...routine,
   exercises: routine.exercises.map((exercise) => ({
+    id: exercise.id,
     exerciseId: exercise.exercise.id,
     name: exercise.exercise.name,
     muscleGroup: exercise.exercise.muscleGroup,

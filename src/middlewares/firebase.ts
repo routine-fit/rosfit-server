@@ -12,6 +12,10 @@ const forbiddenError = new CustomError(403, 'Forbidden. You must have permission
 
 const getTokenDecoded = async (token: string) => {
   let response: DecodedIdToken;
+  if (token.includes('Bearer ')) {
+    token = token.replace('Bearer ', '');
+  }
+
   try {
     response = await firebase.auth().verifyIdToken(token);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -35,9 +39,9 @@ const getTokenDecoded = async (token: string) => {
 };
 
 export const isAdmin = async (req: Request, res: Response, next: NextFunction) => {
-  const { token } = req.headers;
+  const { authorization } = req.headers;
 
-  const response = await getTokenDecoded(String(token));
+  const response = await getTokenDecoded(String(authorization));
   if (response.userType !== 'ADMIN') {
     throw forbiddenError;
   }
@@ -48,9 +52,9 @@ export const isAdmin = async (req: Request, res: Response, next: NextFunction) =
 };
 
 export const isUser = async (req: Request, res: Response, next: NextFunction) => {
-  const { token } = req.headers;
+  const { authorization } = req.headers;
 
-  const response = await getTokenDecoded(String(token));
+  const response = await getTokenDecoded(String(authorization));
   if (!response.uid) {
     throw forbiddenError;
   }

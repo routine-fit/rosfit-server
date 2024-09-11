@@ -18,14 +18,14 @@ const muscleGroupValues = [
 export const exerciseSchema = yup.object<Exercise>({
   name: yup.string().required(),
   muscleGroup: yup.string().oneOf(muscleGroupValues).required(),
-  links: yup.object().shape({
-    create: yup
-      .object()
-      .shape({
-        url: yup.string().required(),
-      })
-      .required(),
-  }),
+  // links: yup
+  //   .object()
+  //   .shape({
+  //     create: yup.object().shape({
+  //       url: yup.string().required(),
+  //     }),
+  //   })
+  //   .optional(),
   userInfoId: yup.string().optional(),
 });
 

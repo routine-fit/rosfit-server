@@ -1,8 +1,8 @@
 export interface Serie {
   id?: string;
   order: number;
-  serieNumber: number;
   weight: number;
+  weightMeasure: 'kg';
   routineExerciseId?: string;
 }
 
@@ -12,7 +12,7 @@ export interface Exercise {
   exerciseId: string;
   series: Serie[];
   repetitions: number;
-  restTimeSecs: number;
+  restTimeSecs?: number;
   order: number;
 }
 

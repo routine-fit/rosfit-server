@@ -11,6 +11,9 @@ import { formatExercisesInRoutine, routineExerciseSelect } from './utils';
 const getAllRoutines = async (req: Request, res: Response) => {
   const routines = await prisma.routine.findMany({
     select: routineExerciseSelect,
+    where: {
+      userInfoId: req.firebaseUid,
+    },
   });
   if (routines.length > 0) {
     return res.status(200).json({
@@ -29,7 +32,7 @@ const getRoutineById = async (req: Request, res: Response) => {
   }
 
   const routine = await prisma.routine.findUnique({
-    where: { id },
+    where: { id, userInfoId: req.firebaseUid },
     select: routineExerciseSelect,
   });
 
@@ -124,59 +127,64 @@ const editRoutine = async (
     });
   }
 
-  const exercisePromises = exercises.map(async (exercise) => {
+  const exercisePromises = exercises.map((exercise) => {
     const { series, id: routineExerciseId, routineId: _routineId, ...exerciseRest } = exercise;
 
-    if (routineExerciseId) {
-      const routineExerciseSaved = routine.exercises.find(
-        (routineExercise) => routineExercise.id === routineExerciseId,
+    const seriesPromises = series.map((serie) => {
+      const { id: _serieId, ...restSerie } = serie;
+      return prisma.seriesRoutineExercise.upsert({
+        where: {
+          order_routineExerciseId: {
+            order: serie.order,
+            routineExerciseId: routineExerciseId || '',
+          },
+        },
+        update: restSerie,
+        create: { ...restSerie, routineExerciseId: routineExerciseId || '' },
+      });
+    });
+
+    let deleteSeriesPromise;
+    const routineExerciseSaved = routine.exercises.find(
+      (routineExercise) => routineExercise.id === routineExerciseId,
+    );
+
+    if (routineExerciseSaved) {
+      const seriesToBeRemoved = routineExerciseSaved.series.filter(
+        (savedSerie) => !series.some((serie) => serie.id === savedSerie.id),
       );
 
-      if (routineExerciseSaved) {
-        const seriesToBeRemoved = routineExerciseSaved.series.filter(
-          (savedSerie) => !series.some((serie) => serie.id === savedSerie.id),
-        );
-
-        if (seriesToBeRemoved.length > 0) {
-          await prisma.seriesRoutineExercise.deleteMany({
-            where: { id: { in: seriesToBeRemoved.map(({ id }) => id) } },
-          });
-        }
+      if (seriesToBeRemoved.length > 0) {
+        deleteSeriesPromise = prisma.seriesRoutineExercise.deleteMany({
+          where: { id: { in: seriesToBeRemoved.map(({ id }) => id) } },
+        });
       }
+    }
 
-      const seriesPromises = series.map((serie) => {
-        const { id: serieId, ...restSerie } = serie;
-
-        if (serieId) {
-          return prisma.seriesRoutineExercise.update({
-            where: { id: serieId },
-            data: restSerie,
-          });
-        } else {
-          return prisma.seriesRoutineExercise.create({
-            data: { ...restSerie, routineExerciseId },
-          });
-        }
-      });
-
-      return Promise.all([
-        prisma.routineExercise.update({
-          where: { id: routineExerciseId },
-          data: exerciseRest,
-        }),
-        ...seriesPromises,
-      ]);
-    } else {
-      return prisma.routineExercise.create({
-        data: {
+    return Promise.all([
+      deleteSeriesPromise,
+      prisma.routineExercise.upsert({
+        where: {
+          routineId_exerciseId: {
+            routineId: routine.id,
+            exerciseId: exercise.exerciseId,
+          },
+        },
+        update: { ...exerciseRest, routineId: routine.id },
+        create: {
           ...exerciseRest,
           routineId: routine.id,
           series: {
-            create: series,
+            create: series.map(({ order, weight, weightMeasure }) => ({
+              order,
+              weight,
+              weightMeasure,
+            })),
           },
         },
-      });
-    }
+      }),
+      ...seriesPromises,
+    ]);
   });
 
   await Promise.all(exercisePromises);
