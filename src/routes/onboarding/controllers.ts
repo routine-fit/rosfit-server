@@ -1,18 +1,27 @@
 import { Request, Response } from 'express';
 
 import { prisma } from 'src/config/prisma';
+import { CustomError } from 'src/interfaces/custom-error';
 import { getActionSuccessMsg } from 'src/utils/messages';
 
-// TODO: Improve this endpoint
 const createMyProfile = async (req: Request, res: Response) => {
+  const userInfoBody = req.body;
+
+  const alreadyCreated = await prisma.userInfo.findUnique({
+    where: { firebaseUid: req.firebaseUid },
+  });
+
+  if (alreadyCreated) {
+    throw new CustomError(400, 'User information already created');
+  }
+
+  const birthDate = new Date(userInfoBody.birthDate);
+
   const userInfo = await prisma.userInfo.create({
     data: {
-      name: '',
-      lastName: '',
-      birthDate: new Date(),
-      gender: 'PREFER_NOT_SPECIFY',
+      ...userInfoBody,
+      birthDate,
       firebaseUid: req.firebaseUid,
-      pushNotification: true,
     },
   });
   if (userInfo) {
