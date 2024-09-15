@@ -12,9 +12,10 @@ export const userInfoSchema = yup.object({
     .required()
     .test((dateString) => new Date(dateString).toString() !== 'Invalid Date'),
   gender: yup.string().oneOf(genderValueList).required(),
+  pushNotification: yup.boolean().optional(),
 });
 
-export const validateUserInfoCreation = async (req: Request, res: Response, next: NextFunction) => {
+export const validateMyInformation = async (req: Request, res: Response, next: NextFunction) => {
   try {
     await userInfoSchema.validate(req.body, { abortEarly: false, strict: true });
     return next();
