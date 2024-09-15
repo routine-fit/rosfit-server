@@ -23,3 +23,6 @@ export const allowedTrainingTypes = [
 ];
 
 export const trainingIntensity = ['HIGH', 'MEDIUM', 'LOW'];
+
+export const weightMeasureValueList = ['kg', 'g'];
+export const heightMeasureValueList = ['m', 'cm'];

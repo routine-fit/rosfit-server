@@ -8,3 +8,12 @@ export const userInfoSelect = Prisma.validator<Prisma.UserInfoSelect>()({
   gender: true,
   pushNotification: true,
 });
+
+export const growthRecordSelect = Prisma.validator<Prisma.GrowthRecordSelect>()({
+  height: true,
+  heightMeasure: true,
+  weight: true,
+  weightMeasure: true,
+  createdAt: true,
+  userInfoId: false,
+});

@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import * as yup from 'yup';
 
+import { weightMeasureValueList } from 'src/constants/validations';
 import { CustomError } from 'src/interfaces/custom-error';
 import { Exercise, RoutineExerciseInput, Serie } from 'src/interfaces/routine';
 
@@ -24,7 +25,7 @@ export const routineSchemaCreation = yup
                 id: yup.string().optional(),
                 order: yup.number().min(1).required(),
                 weight: yup.number().required(),
-                weightMeasure: yup.string().optional(),
+                weightMeasure: yup.string().oneOf(weightMeasureValueList).optional(),
                 routineExerciseId: yup.string().optional(),
               }),
             )

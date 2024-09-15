@@ -22,12 +22,14 @@ model UserInfo {
 }
 
 model GrowthRecord {
-  id         String   @id @default(uuid())
-  weight     Float
-  height     Float
-  createdAt  DateTime
-  userInfoId String
-  user       UserInfo @relation(fields: [userInfoId], references: [firebaseUid])
+  id            String   @id @default(uuid())
+  weight        Float
+  weightMeasure String   @default("kg")
+  height        Float
+  heightMeasure String   @default("m")
+  createdAt     DateTime @default(now())
+  userInfoId    String
+  user          UserInfo @relation(fields: [userInfoId], references: [firebaseUid])
 }
 
 model TrainingPreference {

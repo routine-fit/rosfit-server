@@ -5,7 +5,7 @@ import { CustomError } from 'src/interfaces/custom-error';
 import { getActionSuccessMsg, notFound } from 'src/utils/messages';
 
 import { trainingPreferenceSelect } from './training-preference/utils';
-import { userInfoSelect } from './utils';
+import { growthRecordSelect, userInfoSelect } from './utils';
 
 const getMe = async (req: Request, res: Response) => {
   const userInfo = await prisma.userInfo.findUnique({
@@ -26,6 +26,7 @@ const getMe = async (req: Request, res: Response) => {
     where: {
       userInfoId: req.firebaseUid,
     },
+    select: growthRecordSelect,
     orderBy: {
       createdAt: 'desc',
     },
@@ -103,8 +104,26 @@ const updateMyProfile = async (req: Request, res: Response) => {
   }
 };
 
+const createGrowthRecord = async (req: Request, res: Response) => {
+  const createdGrowthRecord = await prisma.growthRecord.create({
+    data: {
+      ...req.body,
+      userInfoId: req.firebaseUid,
+      createdAt: new Date(),
+    },
+    select: growthRecordSelect,
+  });
+
+  return res.status(201).json({
+    message: getActionSuccessMsg('Growth Record', 'created'),
+    data: createdGrowthRecord,
+    error: false,
+  });
+};
+
 export default {
   getMe,
   createMyProfile,
   updateMyProfile,
+  createGrowthRecord,
 };
