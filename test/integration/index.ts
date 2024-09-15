@@ -2,9 +2,8 @@ import axios from 'axios';
 import dotenv from 'dotenv';
 
 import { appendToReport, createFileReport, logInformationTitle } from '../utils/report-generation';
-import * as authApi from './api/auth.api';
 import * as exerciseApi from './api/exercise.api';
-import * as onboardingApi from './api/onboarding.api';
+import * as meApi from './api/me.api';
 import * as routineApi from './api/routine.api';
 import {
   modifyRoutine,
@@ -29,13 +28,18 @@ const generateReport = async () => {
   appendToReport('# Firebase\n\n');
   logInformationTitle('firebase user');
 
-  const { idToken } = await authApi.signUpFirebase(userCredentials);
-  // await authApi.signInFirebase(userCredentials);
+  const { idToken } = await meApi.signUpFirebase(userCredentials);
+  // await meApi.signInFirebase(userCredentials);
 
   appendToReport('# User information\n\n');
 
-  await onboardingApi.createMyInformation(idToken);
-  await authApi.getMyInformation(idToken);
+  await meApi.createMyInformation(idToken);
+  const { id: trainingPreferenceId } = await meApi.createMyTrainingPreference(idToken);
+  await meApi.updateMyTrainingPreference(idToken, trainingPreferenceId);
+  await meApi.createGrowthRecord(idToken);
+  await meApi.createGrowthRecord(idToken);
+  await meApi.createGrowthRecord(idToken);
+  await meApi.getMyInformation(idToken);
 
   appendToReport('# Exercises\n\n');
 
