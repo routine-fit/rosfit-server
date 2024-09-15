@@ -1,7 +1,7 @@
 import express from 'express';
 
 import controllers from './controllers';
-import trainingPreferenceRouter from './training-preferences';
+import trainingPreferenceRouter from './training-preference';
 import { validateMyInformation } from './validations';
 
 const router = express.Router();

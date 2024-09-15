@@ -4,16 +4,41 @@ import { prisma } from 'src/config/prisma';
 import { CustomError } from 'src/interfaces/custom-error';
 import { getActionSuccessMsg, notFound } from 'src/utils/messages';
 
+import { trainingPreferenceSelect } from './training-preference/utils';
+import { userInfoSelect } from './utils';
+
 const getMe = async (req: Request, res: Response) => {
   const userInfo = await prisma.userInfo.findUnique({
     where: {
       firebaseUid: req.firebaseUid,
     },
+    select: userInfoSelect,
   });
+
+  const trainingPreference = await prisma.trainingPreference.findUnique({
+    where: {
+      userInfoId: req.firebaseUid,
+    },
+    select: trainingPreferenceSelect,
+  });
+
+  const growRecords = await prisma.growthRecord.findMany({
+    where: {
+      userInfoId: req.firebaseUid,
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+  });
+
   if (userInfo) {
     return res.status(200).json({
       message: getActionSuccessMsg('My information', 'found'),
-      data: userInfo,
+      data: {
+        personalInformation: userInfo,
+        trainingPreference,
+        growRecords,
+      },
       error: false,
     });
   }
@@ -39,6 +64,7 @@ const createMyProfile = async (req: Request, res: Response) => {
       birthDate,
       firebaseUid: req.firebaseUid,
     },
+    select: userInfoSelect,
   });
   if (userInfo) {
     return res.status(200).json({
@@ -66,6 +92,7 @@ const updateMyProfile = async (req: Request, res: Response) => {
       birthDate,
       firebaseUid: req.firebaseUid,
     },
+    select: userInfoSelect,
   });
   if (userInfo) {
     return res.status(200).json({
