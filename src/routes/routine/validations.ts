@@ -7,6 +7,7 @@ import { Exercise, RoutineExerciseInput, Serie } from 'src/interfaces/routine';
 export const routineSchemaCreation = yup
   .object<RoutineExerciseInput>({
     name: yup.string().required(),
+    // TODO: Add a list of possible values
     type: yup.string().required(),
     exercises: yup
       .array()

@@ -1,17 +1,16 @@
 import { Request, Response } from 'express';
-import { Prisma } from '@prisma/client';
 
 import { prisma } from 'src/config/prisma';
 import { CustomError } from 'src/interfaces/custom-error';
 import { getActionSuccessMsg, missingId, notFound } from 'src/utils/messages';
 import { getFormattedQueryParams } from 'src/utils/query';
 
+import { exerciseSelect, formatExercises } from './utils';
+
 const getAllExercises = async (req: Request, res: Response) => {
   const { query, orderBy } = getFormattedQueryParams(req.query);
   const exercises = await prisma.exercise.findMany({
-    include: {
-      links: true,
-    },
+    select: exerciseSelect,
     where: {
       ...query,
       userInfoId: req.firebaseUid,
@@ -21,7 +20,7 @@ const getAllExercises = async (req: Request, res: Response) => {
   if (exercises.length > 0) {
     return res.status(200).json({
       message: getActionSuccessMsg('Exercises', 'found'),
-      data: exercises,
+      data: exercises.map(formatExercises),
       error: false,
     });
   }
@@ -35,9 +34,7 @@ const getExerciseById = async (req: Request, res: Response) => {
   }
 
   const exercise = await prisma.exercise.findFirst({
-    include: {
-      links: true,
-    },
+    select: exerciseSelect,
     where: {
       id,
       userInfoId: req.firebaseType === 'NORMAL' ? req.firebaseUid : undefined,
@@ -46,7 +43,7 @@ const getExerciseById = async (req: Request, res: Response) => {
   if (exercise) {
     return res.status(200).json({
       message: getActionSuccessMsg('Exercise', 'found'),
-      data: exercise,
+      data: formatExercises(exercise),
       error: false,
     });
   }
@@ -54,11 +51,14 @@ const getExerciseById = async (req: Request, res: Response) => {
 };
 
 const createExercise = async (req: Request, res: Response) => {
-  const exercise: Prisma.ExerciseCreateInput = req.body;
+  const { links, ...exercise } = req.body;
 
   const createdExercise = await prisma.exercise.create({
     data: {
       ...exercise,
+      links: {
+        create: links,
+      },
       user: {
         connect: {
           firebaseUid:
@@ -68,14 +68,12 @@ const createExercise = async (req: Request, res: Response) => {
         },
       },
     },
-    include: {
-      links: true,
-    },
+    select: exerciseSelect,
   });
 
   return res.status(201).json({
     message: getActionSuccessMsg('Exercise', 'created'),
-    data: createdExercise,
+    data: formatExercises(createdExercise),
     error: false,
   });
 };
@@ -97,14 +95,12 @@ const editExercise = async (req: Request, res: Response) => {
   const editedExercise = await prisma.exercise.update({
     where: { id },
     data: { ...req.body, userInfoId: exercise.userInfoId },
-    include: {
-      links: true,
-    },
+    select: exerciseSelect,
   });
 
   return res.status(200).json({
     message: getActionSuccessMsg('Exercise', 'updated'),
-    data: editedExercise,
+    data: formatExercises(editedExercise),
     error: false,
   });
 };
@@ -131,11 +127,12 @@ const deleteExercise = async (req: Request, res: Response) => {
 
   const deletedExercise = await prisma.exercise.delete({
     where: { id },
+    select: exerciseSelect,
   });
 
   return res.status(200).json({
     message: getActionSuccessMsg('Exercise', 'deleted'),
-    data: deletedExercise,
+    data: formatExercises(deletedExercise),
     error: false,
   });
 };
