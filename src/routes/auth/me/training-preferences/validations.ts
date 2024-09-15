@@ -1,32 +1,13 @@
 import { NextFunction, Request, Response } from 'express';
 import * as yup from 'yup';
 
+import { allowedTrainingTypes, trainingIntensity } from 'src/constants/validations';
 import { CustomError } from 'src/interfaces/custom-error';
-
-export const allowedTrainingTypes = [
-  'STRENGTH',
-  'CARDIO',
-  'FUNCTIONAL',
-  'FLEXIBILITY',
-  'ENDURANCE',
-  'SPORTS_SPECIFIC',
-  'AGILITY',
-  'BODYWEIGHT',
-];
 
 export const trainingPreferenceSchema = yup.object({
   type: yup.string().oneOf(allowedTrainingTypes).required(),
   time: yup.number().positive().required(),
-  intensity: yup.string().oneOf(['HIGH', 'MEDIUM', 'LOW']).required(),
-  user: yup
-    .object({
-      connect: yup
-        .object({
-          firebaseUid: yup.string().required(),
-        })
-        .required(),
-    })
-    .required(),
+  intensity: yup.string().oneOf(trainingIntensity).required(),
 });
 
 export const validateTrainingPreferenceCreation = async (
@@ -35,7 +16,7 @@ export const validateTrainingPreferenceCreation = async (
   next: NextFunction,
 ) => {
   try {
-    await trainingPreferenceSchema.validate(req.body, { abortEarly: false });
+    await trainingPreferenceSchema.validate(req.body, { abortEarly: false, strict: true });
     return next();
   } catch (error) {
     if (yup.ValidationError.isError(error)) {

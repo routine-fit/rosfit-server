@@ -4,11 +4,14 @@ import { prisma } from 'src/config/prisma';
 import { CustomError } from 'src/interfaces/custom-error';
 import { getActionSuccessMsg, missingId, notFound } from 'src/utils/messages';
 
-const getAllTrainingPreferences = async (req: Request, res: Response) => {
+import { trainingPreferenceSelect } from './utils';
+
+const getMyTrainingPreference = async (req: Request, res: Response) => {
   const trainingPreferences = await prisma.trainingPreference.findMany({
-    include: {
-      user: true,
+    where: {
+      userInfoId: req.firebaseUid,
     },
+    select: trainingPreferenceSelect,
   });
   if (trainingPreferences.length > 0) {
     return res.status(200).json({
@@ -21,11 +24,21 @@ const getAllTrainingPreferences = async (req: Request, res: Response) => {
 };
 
 const createTrainingPreference = async (req: Request, res: Response) => {
+  const trainingPreference = await prisma.trainingPreference.findUnique({
+    where: { userInfoId: req.firebaseUid },
+    select: trainingPreferenceSelect,
+  });
+
+  if (trainingPreference) {
+    throw new CustomError(400, 'Training preference already created, please edit yours');
+  }
+
   const createdPreferences = await prisma.trainingPreference.create({
-    data: req.body,
-    include: {
-      user: true,
+    data: {
+      ...req.body,
+      userInfoId: req.firebaseUid,
     },
+    select: trainingPreferenceSelect,
   });
 
   return res.status(201).json({
@@ -49,14 +62,15 @@ const editTrainingPreference = async (req: Request, res: Response) => {
     throw new CustomError(404, notFound('Training Preference'));
   }
 
-  const editedtrainingPreference = await prisma.trainingPreference.update({
+  const editedTrainingPreference = await prisma.trainingPreference.update({
     where: { id },
     data: { ...req.body },
+    select: trainingPreferenceSelect,
   });
 
   return res.status(200).json({
     message: getActionSuccessMsg('Training Preference', 'updated'),
-    data: editedtrainingPreference,
+    data: editedTrainingPreference,
     error: false,
   });
 };
@@ -69,9 +83,6 @@ const deleteTrainingPreference = async (req: Request, res: Response) => {
 
   const trainingPreference = await prisma.trainingPreference.findUnique({
     where: { id },
-    include: {
-      user: true,
-    },
   });
 
   if (!trainingPreference) {
@@ -80,6 +91,7 @@ const deleteTrainingPreference = async (req: Request, res: Response) => {
 
   const deletedTrainingPreference = await prisma.trainingPreference.delete({
     where: { id },
+    select: trainingPreferenceSelect,
   });
 
   return res.status(200).json({
@@ -90,7 +102,7 @@ const deleteTrainingPreference = async (req: Request, res: Response) => {
 };
 
 export default {
-  getAllTrainingPreferences,
+  getMyTrainingPreference,
   createTrainingPreference,
   editTrainingPreference,
   deleteTrainingPreference,

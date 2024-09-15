@@ -10,3 +10,16 @@ export const muscleGroupValueList = [
   'TRAPEZIUS',
   'TRICEPS',
 ];
+
+export const allowedTrainingTypes = [
+  'STRENGTH',
+  'CARDIO',
+  'FUNCTIONAL',
+  'FLEXIBILITY',
+  'ENDURANCE',
+  'SPORTS_SPECIFIC',
+  'AGILITY',
+  'BODYWEIGHT',
+];
+
+export const trainingIntensity = ['HIGH', 'MEDIUM', 'LOW'];
