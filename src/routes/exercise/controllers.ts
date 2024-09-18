@@ -13,7 +13,7 @@ const getAllExercises = async (req: Request, res: Response) => {
     select: exerciseSelect,
     where: {
       ...query,
-      userInfoId: req.firebaseUid,
+      userId: req.firebaseUid,
     },
     orderBy,
   });
@@ -37,7 +37,7 @@ const getExerciseById = async (req: Request, res: Response) => {
     select: exerciseSelect,
     where: {
       id,
-      userInfoId: req.firebaseType === 'NORMAL' ? req.firebaseUid : undefined,
+      userId: req.firebaseType === 'NORMAL' ? req.firebaseUid : undefined,
     },
   });
   if (exercise) {
@@ -62,9 +62,7 @@ const createExercise = async (req: Request, res: Response) => {
       user: {
         connect: {
           firebaseUid:
-            req.firebaseType === 'NORMAL'
-              ? req.firebaseUid
-              : req.body.userInfoId || req.firebaseUid,
+            req.firebaseType === 'NORMAL' ? req.firebaseUid : req.body.userId || req.firebaseUid,
         },
       },
     },
@@ -94,7 +92,7 @@ const editExercise = async (req: Request, res: Response) => {
   // TODO: Review a better approach for updating the links
   const editedExercise = await prisma.exercise.update({
     where: { id },
-    data: { ...req.body, userInfoId: exercise.userInfoId },
+    data: { ...req.body, userId: exercise.userId },
     select: exerciseSelect,
   });
 
@@ -114,7 +112,7 @@ const deleteExercise = async (req: Request, res: Response) => {
   const exercise = await prisma.exercise.findUnique({
     where: {
       id,
-      userInfoId: req.firebaseType === 'NORMAL' ? req.firebaseUid : undefined,
+      userId: req.firebaseType === 'NORMAL' ? req.firebaseUid : undefined,
     },
     include: {
       links: true,

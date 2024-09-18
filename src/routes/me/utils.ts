@@ -15,5 +15,5 @@ export const growthRecordSelect = Prisma.validator<Prisma.GrowthRecordSelect>()(
   weight: true,
   weightMeasure: true,
   createdAt: true,
-  userInfoId: false,
+  userId: false,
 });

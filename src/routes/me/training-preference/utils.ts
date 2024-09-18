@@ -4,5 +4,5 @@ export const trainingPreferenceSelect = Prisma.validator<Prisma.TrainingPreferen
   id: true,
   type: true,
   intensity: true,
-  userInfoId: false,
+  userId: false,
 });

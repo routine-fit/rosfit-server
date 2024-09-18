@@ -9,7 +9,7 @@ import { trainingPreferenceSelect } from './utils';
 const getMyTrainingPreference = async (req: Request, res: Response) => {
   const trainingPreferences = await prisma.trainingPreference.findMany({
     where: {
-      userInfoId: req.firebaseUid,
+      userId: req.firebaseUid,
     },
     select: trainingPreferenceSelect,
   });
@@ -25,7 +25,7 @@ const getMyTrainingPreference = async (req: Request, res: Response) => {
 
 const createTrainingPreference = async (req: Request, res: Response) => {
   const trainingPreference = await prisma.trainingPreference.findUnique({
-    where: { userInfoId: req.firebaseUid },
+    where: { userId: req.firebaseUid },
     select: trainingPreferenceSelect,
   });
 
@@ -36,7 +36,7 @@ const createTrainingPreference = async (req: Request, res: Response) => {
   const createdPreferences = await prisma.trainingPreference.create({
     data: {
       ...req.body,
-      userInfoId: req.firebaseUid,
+      userId: req.firebaseUid,
     },
     select: trainingPreferenceSelect,
   });

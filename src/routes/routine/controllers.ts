@@ -12,7 +12,7 @@ const getAllRoutines = async (req: Request, res: Response) => {
   const routines = await prisma.routine.findMany({
     select: routineExerciseSelect,
     where: {
-      userInfoId: req.firebaseUid,
+      userId: req.firebaseUid,
     },
   });
   if (routines.length > 0) {
@@ -32,7 +32,7 @@ const getRoutineById = async (req: Request, res: Response) => {
   }
 
   const routine = await prisma.routine.findUnique({
-    where: { id, userInfoId: req.firebaseUid },
+    where: { id, userId: req.firebaseUid },
     select: routineExerciseSelect,
   });
 
@@ -76,7 +76,7 @@ const createRoutine = async (req: Request<object, object, RoutineExerciseInput>,
     data: {
       name,
       type,
-      userInfoId: req.firebaseUid,
+      userId: req.firebaseUid,
       exercises: {
         create: routineExercises,
       },

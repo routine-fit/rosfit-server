@@ -17,14 +17,14 @@ const getMe = async (req: Request, res: Response) => {
 
   const trainingPreference = await prisma.trainingPreference.findUnique({
     where: {
-      userInfoId: req.firebaseUid,
+      userId: req.firebaseUid,
     },
     select: trainingPreferenceSelect,
   });
 
   const growRecords = await prisma.growthRecord.findMany({
     where: {
-      userInfoId: req.firebaseUid,
+      userId: req.firebaseUid,
     },
     select: growthRecordSelect,
     orderBy: {
@@ -108,7 +108,7 @@ const createGrowthRecord = async (req: Request, res: Response) => {
   const createdGrowthRecord = await prisma.growthRecord.create({
     data: {
       ...req.body,
-      userInfoId: req.firebaseUid,
+      userId: req.firebaseUid,
       createdAt: new Date(),
     },
     select: growthRecordSelect,

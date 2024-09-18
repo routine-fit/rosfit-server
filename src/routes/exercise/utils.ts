@@ -4,7 +4,7 @@ export const exerciseSelect = Prisma.validator<Prisma.ExerciseSelect>()({
   id: true,
   name: true,
   muscleGroup: true,
-  userInfoId: false,
+  userId: false,
   links: {
     select: {
       id: true,
