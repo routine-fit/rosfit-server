@@ -6,7 +6,7 @@
   - The primary key for the `GrowthRecord` table will be changed. If it partially fails, the table could be left without primary key constraint.
   - The primary key for the `Routine` table will be changed. If it partially fails, the table could be left without primary key constraint.
   - The primary key for the `TrainingPreference` table will be changed. If it partially fails, the table could be left without primary key constraint.
-  - A unique constraint covering the columns `[userInfoId]` on the table `GrowthRecord` will be added. If there are existing duplicate values, this will fail.
+  - A unique constraint covering the columns `[userId]` on the table `GrowthRecord` will be added. If there are existing duplicate values, this will fail.
 
 */
 -- DropForeignKey
@@ -72,7 +72,7 @@ CREATE TABLE "SeriesRoutineExercise" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "GrowthRecord_userInfoId_key" ON "GrowthRecord"("userInfoId");
+CREATE UNIQUE INDEX "GrowthRecord_userId_key" ON "GrowthRecord"("userId");
 
 -- AddForeignKey
 ALTER TABLE "ExerciseLink" ADD CONSTRAINT "ExerciseLink_exerciseId_fkey" FOREIGN KEY ("exerciseId") REFERENCES "Exercise"("id") ON DELETE CASCADE ON UPDATE CASCADE;

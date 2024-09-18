@@ -22,21 +22,23 @@ model UserInfo {
 }
 
 model GrowthRecord {
-  id         String   @id @default(uuid())
-  weight     Float
-  height     Float
-  createdAt  DateTime
-  userInfoId String   @unique
-  user       UserInfo @relation(fields: [userInfoId], references: [firebaseUid])
+  id            String   @id @default(uuid())
+  weight        Float
+  weightMeasure String   @default("kg")
+  height        Float
+  heightMeasure String   @default("m")
+  createdAt     DateTime @default(now())
+  userId        String
+  user          UserInfo @relation(fields: [userId], references: [firebaseUid])
 }
 
 model TrainingPreference {
-  id         String       @id @default(uuid())
-  type       TrainingType
-  time       Int
-  intensity  Intensity
-  userInfoId String       @unique
-  user       UserInfo     @relation(fields: [userInfoId], references: [firebaseUid])
+  id        String       @id @default(uuid())
+  type      TrainingType
+  time      Int
+  intensity Intensity
+  userId    String       @unique
+  user      UserInfo     @relation(fields: [userId], references: [firebaseUid])
 }
 
 model ExerciseLink {
@@ -51,18 +53,18 @@ model Exercise {
   name        String
   muscleGroup MuscleGroup
   links       ExerciseLink[]
-  userInfoId  String
-  user        UserInfo          @relation(fields: [userInfoId], references: [firebaseUid])
+  userId      String
+  user        UserInfo          @relation(fields: [userId], references: [firebaseUid])
   routines    RoutineExercise[]
 }
 
 model Routine {
-  id         String            @id @default(uuid())
-  name       String
-  type       String
-  userInfoId String
-  user       UserInfo          @relation(fields: [userInfoId], references: [firebaseUid])
-  exercises  RoutineExercise[]
+  id        String            @id @default(uuid())
+  name      String
+  type      String
+  userId    String
+  user      UserInfo          @relation(fields: [userId], references: [firebaseUid])
+  exercises RoutineExercise[]
 }
 
 enum MuscleGroup {

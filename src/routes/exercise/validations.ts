@@ -2,36 +2,25 @@ import { NextFunction, Request, Response } from 'express';
 import * as yup from 'yup';
 import { Exercise } from '@prisma/client';
 
+import { muscleGroupValueList } from 'src/constants/validations';
 import { CustomError } from 'src/interfaces/custom-error';
-
-const muscleGroupValues = [
-  'ABDOMINAL',
-  'BICEPS',
-  'DELTOID',
-  'ERECTOR_SPINAE',
-  'LATISSIMUS_DORSI',
-  'PECTORAL',
-  'TRAPEZIUS',
-  'TRICEPS',
-];
 
 export const exerciseSchema = yup.object<Exercise>({
   name: yup.string().required(),
-  muscleGroup: yup.string().oneOf(muscleGroupValues).required(),
-  // links: yup
-  //   .object()
-  //   .shape({
-  //     create: yup.object().shape({
-  //       url: yup.string().required(),
-  //     }),
-  //   })
-  //   .optional(),
-  userInfoId: yup.string().optional(),
+  muscleGroup: yup.string().oneOf(muscleGroupValueList).required(),
+  links: yup
+    .array()
+    .of(
+      yup.object({
+        url: yup.string().required(),
+      }),
+    )
+    .optional(),
 });
 
 export const validateExercise = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    await exerciseSchema.validate(req.body, { abortEarly: false });
+    await exerciseSchema.validate(req.body, { abortEarly: false, strict: true });
     return next();
   } catch (error) {
     if (yup.ValidationError.isError(error)) {

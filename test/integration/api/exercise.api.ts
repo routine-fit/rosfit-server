@@ -7,10 +7,8 @@ export type ExerciseInput = {
   name: string;
   muscleGroup: string;
   links?: {
-    create: {
-      url: string;
-    };
-  };
+    url: string;
+  }[];
 };
 
 export const createExercise = async (token: string, exercise: ExerciseInput) => {

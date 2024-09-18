@@ -14,7 +14,7 @@ export const routineExerciseSelect = Prisma.validator<Prisma.RoutineSelect>()({
           id: true,
           name: true,
           muscleGroup: true,
-          userInfoId: false,
+          userId: false,
         },
       },
       id: true,

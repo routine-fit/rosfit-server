@@ -8,6 +8,25 @@ export const userCredentials = {
   password: 'Password123',
 };
 
+export const createMyInfo = {
+  name: 'Franco',
+  lastName: 'Marini',
+  birthDate: '1990-11-20T15:30:00.000Z',
+  gender: 'MALE',
+};
+
+export const createTrainingPreference = {
+  type: 'STRENGTH',
+  time: 90,
+  intensity: 'MEDIUM',
+};
+
+export const updateTrainingPreference = {
+  type: 'FUNCTIONAL',
+  time: 180,
+  intensity: 'HIGH',
+};
+
 export const newExercise = {
   name: 'Plancha baja',
   muscleGroup: 'PECTORAL',
@@ -16,11 +35,7 @@ export const newExercise = {
 export const newExerciseWithLinks = {
   name: 'Plancha baja con links',
   muscleGroup: 'ABDOMINAL',
-  links: {
-    create: {
-      url: 'hola.com',
-    },
-  },
+  links: [{ url: 'youtube.com/ASD123' }],
 };
 
 export const modifyExercise = { name: 'Triceps x4', muscleGroup: 'TRICEPS' };
@@ -124,3 +139,5 @@ export const modifyRoutine = (routine: any, exercise1: any, exercise2: any) => {
     ],
   };
 };
+
+export const getRandomArbitrary = (min: number, max: number) => Math.random() * (max - min) + min;

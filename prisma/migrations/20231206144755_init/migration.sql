@@ -26,7 +26,7 @@ CREATE TABLE "GrowthRecord" (
     "weight" DOUBLE PRECISION NOT NULL,
     "height" DOUBLE PRECISION NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL,
-    "userInfoId" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
 
     CONSTRAINT "GrowthRecord_pkey" PRIMARY KEY ("id")
 );
@@ -37,7 +37,7 @@ CREATE TABLE "TrainingPreference" (
     "type" "TrainingType" NOT NULL,
     "time" INTEGER NOT NULL,
     "intensity" "Intensity" NOT NULL,
-    "userInfoId" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
 
     CONSTRAINT "TrainingPreference_pkey" PRIMARY KEY ("id")
 );
@@ -56,7 +56,7 @@ CREATE TABLE "Exercise" (
     "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
     "muscleGroup" "MuscleGroup" NOT NULL,
-    "userInfoId" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
 
     CONSTRAINT "Exercise_pkey" PRIMARY KEY ("id")
 );
@@ -66,7 +66,7 @@ CREATE TABLE "Routine" (
     "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
     "type" TEXT NOT NULL,
-    "userInfoId" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
 
     CONSTRAINT "Routine_pkey" PRIMARY KEY ("id")
 );
@@ -75,19 +75,19 @@ CREATE TABLE "Routine" (
 CREATE UNIQUE INDEX "UserInfo_firebaseUid_key" ON "UserInfo"("firebaseUid");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "TrainingPreference_userInfoId_key" ON "TrainingPreference"("userInfoId");
+CREATE UNIQUE INDEX "TrainingPreference_userId_key" ON "TrainingPreference"("userId");
 
 -- AddForeignKey
-ALTER TABLE "GrowthRecord" ADD CONSTRAINT "GrowthRecord_userInfoId_fkey" FOREIGN KEY ("userInfoId") REFERENCES "UserInfo"("firebaseUid") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "GrowthRecord" ADD CONSTRAINT "GrowthRecord_userId_fkey" FOREIGN KEY ("userId") REFERENCES "UserInfo"("firebaseUid") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "TrainingPreference" ADD CONSTRAINT "TrainingPreference_userInfoId_fkey" FOREIGN KEY ("userInfoId") REFERENCES "UserInfo"("firebaseUid") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "TrainingPreference" ADD CONSTRAINT "TrainingPreference_userId_fkey" FOREIGN KEY ("userId") REFERENCES "UserInfo"("firebaseUid") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "ExerciseLink" ADD CONSTRAINT "ExerciseLink_exerciseId_fkey" FOREIGN KEY ("exerciseId") REFERENCES "Exercise"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Exercise" ADD CONSTRAINT "Exercise_userInfoId_fkey" FOREIGN KEY ("userInfoId") REFERENCES "UserInfo"("firebaseUid") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Exercise" ADD CONSTRAINT "Exercise_userId_fkey" FOREIGN KEY ("userId") REFERENCES "UserInfo"("firebaseUid") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Routine" ADD CONSTRAINT "Routine_userInfoId_fkey" FOREIGN KEY ("userInfoId") REFERENCES "UserInfo"("firebaseUid") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Routine" ADD CONSTRAINT "Routine_userId_fkey" FOREIGN KEY ("userId") REFERENCES "UserInfo"("firebaseUid") ON DELETE RESTRICT ON UPDATE CASCADE;
