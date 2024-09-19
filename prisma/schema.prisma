@@ -147,6 +147,6 @@ model ScheduleRoutine {
   userId    String
   user      UserInfo @relation(fields: [userId], references: [firebaseUid])
   day       Day
-  isActive  Boolean
+  isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
 }

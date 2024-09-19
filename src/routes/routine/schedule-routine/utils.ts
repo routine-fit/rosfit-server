@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client';
 
-export const scheduleRoutineExerciseSelect = Prisma.validator<Prisma.ScheduleRoutineSelect>()({
+export const scheduleRoutineSelect = Prisma.validator<Prisma.ScheduleRoutineSelect>()({
   id: true,
   day: true,
   userId: true,
@@ -30,4 +30,5 @@ export const scheduleRoutineExerciseSelect = Prisma.validator<Prisma.ScheduleRou
       },
     },
   },
+  createdAt: true,
 });

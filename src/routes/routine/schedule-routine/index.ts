@@ -1,11 +1,12 @@
 import express from 'express';
 
 import controllers from './controllers';
-// import { validateRoutineCreation } from './validations';
+import { validateScheduleRoutineCreation } from './validations';
 
 const router = express.Router();
 
 router.get('/', controllers.getAllScheduleRoutines);
-router.post('/', controllers.createScheduleRoutine);
+router.post('/', validateScheduleRoutineCreation, controllers.createScheduleRoutine);
+router.delete('/:id', controllers.deleteScheduleRoutine);
 
 export default router;
