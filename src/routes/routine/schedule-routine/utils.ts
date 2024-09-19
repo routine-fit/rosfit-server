@@ -2,7 +2,6 @@ import { Prisma } from '@prisma/client';
 
 export const scheduleRoutineExerciseSelect = Prisma.validator<Prisma.ScheduleRoutineSelect>()({
   id: true,
-  isActive: true,
   day: true,
   userId: true,
   routine: {
@@ -24,6 +23,9 @@ export const scheduleRoutineExerciseSelect = Prisma.validator<Prisma.ScheduleRou
           repetitions: true,
           restTimeSecs: true,
           order: true,
+        },
+        orderBy: {
+          order: 'asc',
         },
       },
     },
