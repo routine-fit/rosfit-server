@@ -57,6 +57,7 @@ const generateReport = async () => {
 
   const mockedRoutine = newRoutine(createdExercise.id, createdExerciseWithLink.id);
   const createdRoutine = await routineApi.createRoutine(idToken, mockedRoutine);
+  const scheduleRoutineDay = 'MONDAY';
 
   await routineApi.getRoutines(idToken);
 
@@ -65,7 +66,18 @@ const generateReport = async () => {
   const modifiedRoutine = modifyRoutine(createdRoutine, createdExercise, createdExerciseWithLink);
   await routineApi.editRoutine(idToken, modifiedRoutine);
 
+  const scheduleRoutine = await routineApi.createScheduleRoutine(idToken, {
+    routineId: createdRoutine.id,
+    day: scheduleRoutineDay,
+  });
+
+  await routineApi.getScheduleRoutines(idToken);
+
+  await routineApi.getScheduleRoutinesByDay(idToken, scheduleRoutineDay);
+
   appendToReport('# Remove everything\n\n');
+
+  await routineApi.deleteScheduleRoutine(idToken, scheduleRoutine.id);
 
   await routineApi.deleteRoutine(idToken, createdRoutine.id);
 

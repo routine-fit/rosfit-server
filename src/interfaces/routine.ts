@@ -28,7 +28,7 @@ export interface RoutineExerciseInput {
 export interface ScheduleRoutineInput {
   id?: string;
   routineId: string;
-  userId: string;
+  userId?: string;
   day: Day;
   isActive?: boolean;
 }
