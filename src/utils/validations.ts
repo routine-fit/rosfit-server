@@ -7,7 +7,7 @@ export const createValidationFn =
   <Scheme extends yup.ObjectSchema<yup.Maybe<yup.AnyObject>>>(yupScheme: Scheme) =>
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      await yupScheme.validate(req.body, { strict: true });
+      await yupScheme.validate(req.body, { abortEarly: false, strict: true });
       return next();
     } catch (error) {
       if (yup.ValidationError.isError(error)) {

@@ -273,6 +273,7 @@ const startRoutine = async (req: Request, res: Response) => {
 const getSummaryRoutines = async (req: Request, res: Response) => {
   const summaryRoutines = await prisma.summaryRoutine.findMany({
     where: { userId: req.firebaseUid },
+    select: summaryRoutineSelect,
   });
 
   return res.status(200).json({
