@@ -26,3 +26,13 @@ export const trainingIntensity = ['HIGH', 'MEDIUM', 'LOW'];
 
 export const weightMeasureValueList = ['kg', 'g'];
 export const heightMeasureValueList = ['m', 'cm'];
+
+export const daysValueList = [
+  'MONDAY',
+  'TUESDAY',
+  'WEDNESDAY',
+  'THURSDAY',
+  'FRIDAY',
+  'SATURDAY',
+  'SUNDAY',
+];

@@ -19,6 +19,7 @@ model UserInfo {
   routines           Routine[]
   exercises          Exercise[]
   trainingPreference TrainingPreference?
+  ScheduleRoutine    ScheduleRoutine[]
 }
 
 model GrowthRecord {
@@ -59,12 +60,13 @@ model Exercise {
 }
 
 model Routine {
-  id        String            @id @default(uuid())
-  name      String
-  type      String
-  userId    String
-  user      UserInfo          @relation(fields: [userId], references: [firebaseUid])
-  exercises RoutineExercise[]
+  id              String            @id @default(uuid())
+  name            String
+  type            String
+  userId          String
+  user            UserInfo          @relation(fields: [userId], references: [firebaseUid])
+  exercises       RoutineExercise[]
+  ScheduleRoutine ScheduleRoutine[]
 }
 
 enum MuscleGroup {
@@ -103,6 +105,16 @@ enum Intensity {
   LOW
 }
 
+enum Day {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
 model RoutineExercise {
   id           String                  @id @default(uuid())
   routineId    String
@@ -126,4 +138,15 @@ model SeriesRoutineExercise {
   routineExercise   RoutineExercise @relation(fields: [routineExerciseId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   @@unique([order, routineExerciseId])
+}
+
+model ScheduleRoutine {
+  id        String   @id @default(uuid())
+  routineId String
+  routine   Routine  @relation(fields: [routineId], references: [id])
+  userId    String
+  user      UserInfo @relation(fields: [userId], references: [firebaseUid])
+  day       Day
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
 }

@@ -1,3 +1,5 @@
+import { Day } from '@prisma/client';
+
 export interface Serie {
   id?: string;
   order: number;
@@ -21,4 +23,12 @@ export interface RoutineExerciseInput {
   name: string;
   type: string;
   exercises: Exercise[];
+}
+
+export interface ScheduleRoutineInput {
+  id?: string;
+  routineId: string;
+  userId?: string;
+  day: Day;
+  isActive?: boolean;
 }
