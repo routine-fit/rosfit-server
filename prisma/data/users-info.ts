@@ -46,7 +46,7 @@ export const usersInfo: Prisma.UserInfoCreateManyInput[] = [
     name: 'Draja',
     lastName: 'Majin',
     birthDate: '2000-07-15T00:00:00.000Z',
-    gender: 'BINARY',
+    gender: 'NON_BINARY',
     pushNotification: false,
   },
 ];

@@ -62,13 +62,13 @@ CREATE TABLE "RoutineExercise" (
 );
 
 -- CreateTable
-CREATE TABLE "SeriesRoutineExercise" (
+CREATE TABLE "SerieRoutineExercise" (
     "id" TEXT NOT NULL,
     "serieNumber" INTEGER NOT NULL,
     "weight" DOUBLE PRECISION NOT NULL,
     "routineExerciseId" TEXT NOT NULL,
 
-    CONSTRAINT "SeriesRoutineExercise_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "SerieRoutineExercise_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -84,4 +84,4 @@ ALTER TABLE "RoutineExercise" ADD CONSTRAINT "RoutineExercise_routineId_fkey" FO
 ALTER TABLE "RoutineExercise" ADD CONSTRAINT "RoutineExercise_exerciseId_fkey" FOREIGN KEY ("exerciseId") REFERENCES "Exercise"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "SeriesRoutineExercise" ADD CONSTRAINT "SeriesRoutineExercise_routineExerciseId_fkey" FOREIGN KEY ("routineExerciseId") REFERENCES "RoutineExercise"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "SerieRoutineExercise" ADD CONSTRAINT "SerieRoutineExercise_routineExerciseId_fkey" FOREIGN KEY ("routineExerciseId") REFERENCES "RoutineExercise"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
