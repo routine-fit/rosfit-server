@@ -1,12 +1,18 @@
+import { differenceInMinutes } from 'date-fns';
 import { Request, Response } from 'express';
-import { Prisma } from '@prisma/client';
+import { Prisma, SummaryRoutineExerciseSerie } from '@prisma/client';
 
 import { prisma } from 'src/config/prisma';
 import { CustomError } from 'src/interfaces/custom-error';
-import { RoutineExerciseInput } from 'src/interfaces/routine';
+import { RoutineExerciseInput, SummaryRoutineInput } from 'src/interfaces/routine';
 import { getActionSuccessMsg, missingId, notFound } from 'src/utils/messages';
 
-import { formatExercisesInRoutine, routineExerciseSelect } from './utils';
+import {
+  formatExercisesInRoutine,
+  routineExerciseSelect,
+  summaryRoutineSelect,
+  summaryRoutineSelectGetRoutineId,
+} from './utils';
 
 const getAllRoutines = async (req: Request, res: Response) => {
   const routines = await prisma.routine.findMany({
@@ -67,6 +73,7 @@ const createRoutine = async (req: Request<object, object, RoutineExerciseInput>,
 
   // TODO: Business rules validations and return errors
   /**
+   * Validate the exercise is from the user
    * Validate one type of exercise per routine
    * Validate one order value per exercise
    * Validate one order value per serie
@@ -121,30 +128,41 @@ const editRoutine = async (
     (savedExercise) => !exercises.some((exercise) => exercise.id === savedExercise.id),
   );
 
+  const transactionOperations = [];
+
   if (routineExercisesToBeRemoved.length > 0) {
-    await prisma.routineExercise.deleteMany({
-      where: { id: { in: routineExercisesToBeRemoved.map(({ id }) => id) } },
-    });
+    transactionOperations.push(
+      prisma.routineExercise.deleteMany({
+        where: { id: { in: routineExercisesToBeRemoved.map(({ id }) => id) } },
+      }),
+    );
   }
 
-  const exercisePromises = exercises.map((exercise) => {
-    const { series, id: routineExerciseId, routineId: _routineId, ...exerciseRest } = exercise;
+  exercises.forEach((exercise) => {
+    const { series, id: routineExerciseId, ...exerciseRest } = exercise;
 
-    const seriesPromises = series.map((serie) => {
-      const { id: _serieId, ...restSerie } = serie;
-      return prisma.seriesRoutineExercise.upsert({
-        where: {
-          order_routineExerciseId: {
-            order: serie.order,
-            routineExerciseId: routineExerciseId || '',
+    series.forEach((serie) => {
+      const { id: _serieId, routineExerciseId: _routineExerciseId, ...restSerie } = serie;
+
+      transactionOperations.push(
+        prisma.serieRoutineExercise.upsert({
+          where: {
+            order_routineExerciseId: {
+              order: serie.order,
+              routineExerciseId: routineExerciseId || '',
+            },
           },
-        },
-        update: restSerie,
-        create: { ...restSerie, routineExerciseId: routineExerciseId || '' },
-      });
+          update: restSerie,
+          create: {
+            ...restSerie,
+            routineExercise: {
+              connect: { id: routineExerciseId || '' },
+            },
+          },
+        }),
+      );
     });
 
-    let deleteSeriesPromise;
     const routineExerciseSaved = routine.exercises.find(
       (routineExercise) => routineExercise.id === routineExerciseId,
     );
@@ -155,14 +173,15 @@ const editRoutine = async (
       );
 
       if (seriesToBeRemoved.length > 0) {
-        deleteSeriesPromise = prisma.seriesRoutineExercise.deleteMany({
-          where: { id: { in: seriesToBeRemoved.map(({ id }) => id) } },
-        });
+        transactionOperations.push(
+          prisma.serieRoutineExercise.deleteMany({
+            where: { id: { in: seriesToBeRemoved.map(({ id }) => id) } },
+          }),
+        );
       }
     }
 
-    return Promise.all([
-      deleteSeriesPromise,
+    transactionOperations.push(
       prisma.routineExercise.upsert({
         where: {
           routineId_exerciseId: {
@@ -183,17 +202,22 @@ const editRoutine = async (
           },
         },
       }),
-      ...seriesPromises,
-    ]);
+    );
   });
 
-  await Promise.all(exercisePromises);
+  transactionOperations.push(
+    prisma.routine.update({
+      where: { id },
+      data: { name, type },
+      select: routineExerciseSelect,
+    }),
+  );
 
-  const editedRoutine = await prisma.routine.update({
-    where: { id },
-    data: { name, type },
-    select: routineExerciseSelect,
-  });
+  const transactions = await prisma.$transaction(transactionOperations);
+
+  const editedRoutine = transactions.pop() as Prisma.RoutineGetPayload<{
+    select: typeof routineExerciseSelect;
+  }>;
 
   return res.status(200).json({
     message: getActionSuccessMsg('Routine', 'updated'),
@@ -228,10 +252,125 @@ const deleteRoutine = async (req: Request, res: Response) => {
   });
 };
 
+const startRoutine = async (req: Request, res: Response) => {
+  const { scheduleRoutineId } = req.body;
+
+  const startedRoutine = await prisma.summaryRoutine.create({
+    data: {
+      scheduleRoutineId: scheduleRoutineId as string,
+      userId: req.firebaseUid,
+      durationInMinutes: 0,
+    },
+  });
+
+  return res.status(201).json({
+    message: 'Routine has been started.',
+    data: startedRoutine,
+    error: false,
+  });
+};
+
+const getSummaryRoutines = async (req: Request, res: Response) => {
+  const summaryRoutines = await prisma.summaryRoutine.findMany({
+    where: { userId: req.firebaseUid },
+  });
+
+  return res.status(200).json({
+    message: getActionSuccessMsg('Summary routines', 'found'),
+    data: summaryRoutines,
+    error: false,
+  });
+};
+
+const finishRoutine = async (
+  req: Request<{ summaryRoutineId: string }, object, SummaryRoutineInput>,
+  res: Response,
+) => {
+  const { summaryRoutineId } = req.params;
+  const { exercises } = req.body;
+
+  const transactionOperations = [];
+
+  const summaryRoutine = await prisma.summaryRoutine.findUnique({
+    where: { id: summaryRoutineId },
+    select: summaryRoutineSelectGetRoutineId,
+  });
+
+  if (!summaryRoutine) {
+    throw new CustomError(404, notFound('Summary routine'));
+  }
+
+  if (summaryRoutine.finishedAt) {
+    throw new CustomError(
+      400,
+      'Summary routine already finished. Please start another scheduled routine.',
+    );
+  }
+
+  const finishedAt = new Date();
+  const durationInMinutes = differenceInMinutes(finishedAt, summaryRoutine.startedAt);
+
+  exercises.forEach((exercise) => {
+    const { id: routineExerciseId, series, ...exerciseRest } = exercise;
+
+    const summarySeries: Omit<SummaryRoutineExerciseSerie, 'id' | 'summaryRoutineExerciseId'>[] =
+      [];
+
+    series.forEach((serie) => {
+      const { id: serieId, ...restSerie } = serie;
+      summarySeries.push({ ...restSerie });
+
+      transactionOperations.push(
+        prisma.serieRoutineExercise.update({
+          where: { id: serieId },
+          data: restSerie,
+        }),
+      );
+    });
+
+    const updateRoutineExercise = prisma.routineExercise.update({
+      where: { id: routineExerciseId },
+      data: exerciseRest,
+    });
+
+    const createSummaryRoutineExercise = prisma.summaryRoutineExercise.create({
+      data: {
+        ...exerciseRest,
+        summaryRoutineId: summaryRoutine.id,
+        routineExerciseId,
+        summarySeries: { create: summarySeries },
+      },
+    });
+
+    transactionOperations.push(createSummaryRoutineExercise);
+    transactionOperations.push(updateRoutineExercise);
+  });
+
+  const updateSummaryRoutine = prisma.summaryRoutine.update({
+    where: { id: summaryRoutineId },
+    data: { durationInMinutes, finishedAt },
+    select: summaryRoutineSelect,
+  });
+
+  transactionOperations.push(updateSummaryRoutine);
+
+  const transactions = await prisma.$transaction(transactionOperations);
+  const finishedRoutineUpdated = transactions.pop();
+
+  return res.status(200).json({
+    message: 'Routine has been finished.',
+    data: finishedRoutineUpdated,
+    error: false,
+  });
+};
+
 export default {
   getAllRoutines,
   getRoutineById,
   createRoutine,
   editRoutine,
   deleteRoutine,
+  startRoutine,
+  getSummaryRoutines,
+  finishRoutine,
 };

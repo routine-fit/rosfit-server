@@ -32,3 +32,18 @@ export interface ScheduleRoutineInput {
   day: Day;
   isActive?: boolean;
 }
+
+export interface SummaryRoutineExercise {
+  id: string;
+  repetitions: number;
+  restTimeSecs: number;
+  series: {
+    id: string;
+    weight: number;
+    weightMeasure: string;
+  }[];
+}
+
+export interface SummaryRoutineInput {
+  exercises: SummaryRoutineExercise[];
+}
