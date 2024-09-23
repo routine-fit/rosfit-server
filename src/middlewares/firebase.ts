@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 import { DecodedIdToken } from 'firebase-admin/lib/auth/token-verifier';
 
 import firebase from 'src/config/firebase';
+import { prisma } from 'src/config/prisma';
 import { CustomError } from 'src/interfaces/custom-error';
 import { ApiCodes } from 'src/utils/messages';
 
@@ -36,6 +37,17 @@ const getTokenDecoded = async (token: string) => {
   }
 
   return response;
+};
+
+export const hasDoneOnboarding = async (req: Request, res: Response, next: NextFunction) => {
+  const userInfo = await prisma.userInfo.findUnique({ where: { firebaseUid: req.firebaseUid } });
+
+  if (!userInfo)
+    throw new CustomError(400, 'Please complete the onboarding process.', {
+      type: ApiCodes.ONBOARDING_PROCESS_MISSING,
+    });
+
+  return next();
 };
 
 export const isAdmin = async (req: Request, res: Response, next: NextFunction) => {
