@@ -13,7 +13,7 @@ const getAllExercises = async (req: Request, res: Response) => {
     select: exerciseSelect,
     where: {
       userId: req.firebaseUid,
-      name: { contains: query.name as string },
+      name: { contains: query.name.toString(), mode: 'insensitive' },
     },
     orderBy,
   });
