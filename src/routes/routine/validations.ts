@@ -1,11 +1,10 @@
-import { NextFunction, Request, Response } from 'express';
 import * as yup from 'yup';
 
 import { weightMeasureValueList } from 'src/constants/validations';
-import { CustomError } from 'src/interfaces/custom-error';
 import { Exercise, RoutineExerciseInput, Serie } from 'src/interfaces/routine';
+import { createValidationFn } from 'src/utils/validations';
 
-export const routineSchemaCreation = yup
+const routineSchemaCreation = yup
   .object<RoutineExerciseInput>({
     name: yup.string().required(),
     // TODO: Add a list of possible values
@@ -40,15 +39,40 @@ export const routineSchemaCreation = yup
   .noUnknown(true)
   .required();
 
-export const validateRoutineCreation = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    await routineSchemaCreation.validate(req.body, { strict: true });
-    return next();
-  } catch (error) {
-    if (yup.ValidationError.isError(error)) {
-      throw new CustomError(400, error.errors[0]);
-    } else {
-      throw new CustomError(500, 'Internal Server Error');
-    }
-  }
-};
+export const validateRoutine = createValidationFn(routineSchemaCreation);
+
+const startRoutineScheme = yup
+  .object({ scheduleRoutineId: yup.string().required() })
+  .noUnknown(true)
+  .required();
+
+export const validateStartRoutine = createValidationFn(startRoutineScheme);
+
+const finishRoutineScheme = yup
+  .object({
+    exercises: yup
+      .array()
+      .of(
+        yup.object({
+          id: yup.string().required(),
+          repetitions: yup.number().required(),
+          restTimeSecs: yup.number().required(),
+          series: yup
+            .array()
+            .of(
+              yup.object({
+                id: yup.string().required(),
+                weight: yup.number().required(),
+                weightMeasure: yup.string().oneOf(weightMeasureValueList).required(),
+              }),
+            )
+            .min(1),
+        }),
+      )
+      .required()
+      .min(1),
+  })
+  .noUnknown(true)
+  .required();
+
+export const validateFinishRoutine = createValidationFn(finishRoutineScheme);

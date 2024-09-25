@@ -9,7 +9,7 @@ datasource db {
 }
 
 model UserInfo {
-  firebaseUid        String              @unique
+  firebaseUid        String              @id @unique
   name               String
   lastName           String
   birthDate          DateTime
@@ -19,7 +19,10 @@ model UserInfo {
   routines           Routine[]
   exercises          Exercise[]
   trainingPreference TrainingPreference?
-  ScheduleRoutine    ScheduleRoutine[]
+  scheduleRoutines   ScheduleRoutine[]
+  summaryRoutines    SummaryRoutine[]
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime?           @updatedAt
 }
 
 model GrowthRecord {
@@ -30,7 +33,9 @@ model GrowthRecord {
   heightMeasure String   @default("m")
   createdAt     DateTime @default(now())
   userId        String
-  user          UserInfo @relation(fields: [userId], references: [firebaseUid])
+  user          UserInfo @relation(fields: [userId], references: [firebaseUid], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model TrainingPreference {
@@ -39,7 +44,9 @@ model TrainingPreference {
   time      Int
   intensity Intensity
   userId    String       @unique
-  user      UserInfo     @relation(fields: [userId], references: [firebaseUid])
+  user      UserInfo     @relation(fields: [userId], references: [firebaseUid], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
 }
 
 model ExerciseLink {
@@ -47,6 +54,8 @@ model ExerciseLink {
   url        String
   exerciseId String
   exercise   Exercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+
+  @@index([exerciseId])
 }
 
 model Exercise {
@@ -55,18 +64,105 @@ model Exercise {
   muscleGroup MuscleGroup
   links       ExerciseLink[]
   userId      String
-  user        UserInfo          @relation(fields: [userId], references: [firebaseUid])
+  user        UserInfo          @relation(fields: [userId], references: [firebaseUid], onDelete: Cascade)
   routines    RoutineExercise[]
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime?         @updatedAt
+
+  @@index([userId])
 }
 
 model Routine {
-  id              String            @id @default(uuid())
-  name            String
-  type            String
+  id               String            @id @default(uuid())
+  name             String
+  type             String
+  userId           String
+  user             UserInfo          @relation(fields: [userId], references: [firebaseUid], onDelete: Cascade)
+  exercises        RoutineExercise[]
+  scheduleRoutines ScheduleRoutine[]
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime?         @updatedAt
+
+  @@index([userId])
+}
+
+model RoutineExercise {
+  id                      String                   @id @default(uuid())
+  routineId               String
+  routine                 Routine                  @relation(fields: [routineId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  exerciseId              String
+  exercise                Exercise                 @relation(fields: [exerciseId], references: [id], onUpdate: Cascade)
+  repetitions             Int
+  restTimeSecs            Int                      @default(30)
+  series                  SerieRoutineExercise[]
+  order                   Int
+  summaryRoutineExercises SummaryRoutineExercise[]
+
+  @@unique([routineId, exerciseId])
+  @@index([routineId, exerciseId])
+}
+
+model SerieRoutineExercise {
+  id                String          @id @default(uuid())
+  order             Int
+  weight            Float
+  weightMeasure     String          @default("kg")
+  routineExerciseId String
+  routineExercise   RoutineExercise @relation(fields: [routineExerciseId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@unique([order, routineExerciseId])
+}
+
+model ScheduleRoutine {
+  id              String           @id @default(uuid())
+  routineId       String
+  routine         Routine          @relation(fields: [routineId], references: [id], onDelete: Cascade)
   userId          String
-  user            UserInfo          @relation(fields: [userId], references: [firebaseUid])
-  exercises       RoutineExercise[]
-  ScheduleRoutine ScheduleRoutine[]
+  user            UserInfo         @relation(fields: [userId], references: [firebaseUid], onDelete: Cascade)
+  day             Day
+  isActive        Boolean          @default(true)
+  createdAt       DateTime         @default(now())
+  summaryRoutines SummaryRoutine[]
+
+  @@index([routineId, userId])
+}
+
+model SummaryRoutine {
+  id                String                   @id @default(uuid())
+  startedAt         DateTime                 @default(now())
+  finishedAt        DateTime?
+  durationInMinutes Int?
+  userId            String
+  user              UserInfo                 @relation(fields: [userId], references: [firebaseUid], onDelete: Cascade)
+  scheduleRoutineId String
+  scheduleRoutine   ScheduleRoutine          @relation(fields: [scheduleRoutineId], references: [id], onDelete: Cascade)
+  summaryExercises  SummaryRoutineExercise[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+
+  @@index([userId, scheduleRoutineId])
+}
+
+model SummaryRoutineExercise {
+  id                String                        @id @default(uuid())
+  routineExerciseId String
+  routineExercise   RoutineExercise               @relation(fields: [routineExerciseId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  summaryRoutineId  String
+  summaryRoutine    SummaryRoutine                @relation(fields: [summaryRoutineId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  summarySeries     SummaryRoutineExerciseSerie[]
+  repetitions       Int
+  restTimeSecs      Int
+
+  @@index([summaryRoutineId, routineExerciseId])
+}
+
+model SummaryRoutineExerciseSerie {
+  id                       String                 @id @default(uuid())
+  summaryRoutineExerciseId String
+  summaryRoutineExercise   SummaryRoutineExercise @relation(fields: [summaryRoutineExerciseId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  weight                   Float
+  weightMeasure            String                 @default("kg")
 }
 
 enum MuscleGroup {
@@ -83,7 +179,7 @@ enum MuscleGroup {
 enum Gender {
   MALE
   FEMALE
-  BINARY
+  NON_BINARY
   PREFER_NOT_SPECIFY
 }
 
@@ -98,7 +194,6 @@ enum TrainingType {
   BODYWEIGHT
 }
 
-// TO-DO: Review for future
 enum Intensity {
   HIGH
   MEDIUM
@@ -113,40 +208,4 @@ enum Day {
   FRIDAY
   SATURDAY
   SUNDAY
-}
-
-model RoutineExercise {
-  id           String                  @id @default(uuid())
-  routineId    String
-  routine      Routine                 @relation(fields: [routineId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  exerciseId   String
-  exercise     Exercise                @relation(fields: [exerciseId], references: [id], onUpdate: Cascade)
-  repetitions  Int
-  restTimeSecs Int                     @default(30)
-  series       SeriesRoutineExercise[]
-  order        Int
-
-  @@unique([routineId, exerciseId])
-}
-
-model SeriesRoutineExercise {
-  id                String          @id @default(uuid())
-  order             Int
-  weight            Float
-  weightMeasure     String          @default("kg")
-  routineExerciseId String
-  routineExercise   RoutineExercise @relation(fields: [routineExerciseId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-
-  @@unique([order, routineExerciseId])
-}
-
-model ScheduleRoutine {
-  id        String   @id @default(uuid())
-  routineId String
-  routine   Routine  @relation(fields: [routineId], references: [id])
-  userId    String
-  user      UserInfo @relation(fields: [userId], references: [firebaseUid])
-  day       Day
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
 }

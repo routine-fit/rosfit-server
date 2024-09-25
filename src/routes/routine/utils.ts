@@ -47,3 +47,23 @@ export const formatExercisesInRoutine = (
     series: exercise.series,
   })),
 });
+
+export const summaryRoutineSelectGetRoutineId = Prisma.validator<Prisma.SummaryRoutineSelect>()({
+  id: true,
+  startedAt: true,
+  finishedAt: true,
+  scheduleRoutine: { select: { routineId: true } },
+});
+
+export const summaryRoutineSelect = Prisma.validator<Prisma.SummaryRoutineSelect>()({
+  id: true,
+  startedAt: true,
+  durationInMinutes: true,
+  finishedAt: true,
+  userId: false,
+  scheduleRoutine: {
+    select: {
+      routine: { select: routineExerciseSelect },
+    },
+  },
+});

@@ -12,8 +12,8 @@ const getAllExercises = async (req: Request, res: Response) => {
   const exercises = await prisma.exercise.findMany({
     select: exerciseSelect,
     where: {
-      ...query,
       userId: req.firebaseUid,
+      name: query.name ? { contains: query.name.toString(), mode: 'insensitive' } : {},
     },
     orderBy,
   });
