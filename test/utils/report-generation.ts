@@ -63,8 +63,9 @@ export function logData(endpointName: string, response: AxiosResponse): void {
   number += 1;
   console.log(
     '\n'.padStart(154, '-') +
-      `${number}: ${endpointName}\n\n${response?.config
-        .url} - Status: ${response?.status}\n${sliceDataLength(response?.data, true)}\n`,
+      `${number}: ${endpointName}\n\n${
+        response?.config.url
+      } - Status: ${response?.status}\n${sliceDataLength(response?.data, true)}\n`,
   );
 }
 

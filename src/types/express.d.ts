@@ -1,4 +1,4 @@
-declare module Express {
+declare namespace Express {
   export interface Request {
     firebaseUid: string;
     // TODO: Get type from FirebaseUser interface
