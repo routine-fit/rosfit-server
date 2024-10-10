@@ -71,14 +71,6 @@ const createRoutine = async (req: Request<object, object, RoutineExerciseInput>,
     }),
   );
 
-  // TODO: Business rules validations and return errors
-  /**
-   * Validate the exercise is from the user
-   * Validate one type of exercise per routine
-   * Validate one order value per exercise
-   * Validate one order value per serie
-   */
-
   const createdRoutine = await prisma.routine.create({
     data: {
       name,

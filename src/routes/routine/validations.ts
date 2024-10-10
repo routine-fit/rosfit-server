@@ -1,8 +1,11 @@
+import { NextFunction, Request, Response } from 'express';
 import * as yup from 'yup';
 
+import { prisma } from 'src/config/prisma';
 import { weightMeasureValueList } from 'src/constants/validations';
-import { Exercise, RoutineExerciseInput, Serie } from 'src/interfaces/routine';
-import { createValidationFn } from 'src/utils/validations';
+import { CustomError } from 'src/interfaces/custom-error';
+import { Exercise, RoutineExerciseInput } from 'src/interfaces/routine';
+import { createValidationFn, hasUniqueValues } from 'src/utils/validations';
 
 const routineSchemaCreation = yup
   .object<RoutineExerciseInput>({
@@ -12,7 +15,7 @@ const routineSchemaCreation = yup
     exercises: yup
       .array()
       .of(
-        yup.object<Exercise>({
+        yup.object({
           exerciseId: yup.string().required(),
           repetitions: yup.number().required(),
           order: yup.number().min(1).required(),
@@ -20,7 +23,7 @@ const routineSchemaCreation = yup
           series: yup
             .array()
             .of(
-              yup.object<Serie>({
+              yup.object({
                 id: yup.string().optional(),
                 order: yup.number().min(1).required(),
                 weight: yup.number().required(),
@@ -29,12 +32,21 @@ const routineSchemaCreation = yup
               }),
             )
             .min(1)
-            .max(10),
+            .max(10)
+            .test('hasUniqueOrder', 'The order of the series are duplicated', (value) =>
+              hasUniqueValues(value, ({ order }) => order),
+            ),
         }),
       )
       .required()
       .min(1)
-      .max(10),
+      .max(10)
+      .test('hasUniqueExercises', 'One of the exercises is duplicated', (value) =>
+        hasUniqueValues(value, ({ exerciseId }) => exerciseId),
+      )
+      .test('hasUniqueOrder', 'The order of the exercises are duplicated', (value) =>
+        hasUniqueValues(value, ({ order }) => order),
+      ),
   })
   .noUnknown(true)
   .required();
@@ -76,3 +88,23 @@ const finishRoutineScheme = yup
   .required();
 
 export const validateFinishRoutine = createValidationFn(finishRoutineScheme);
+
+export const validateExercisesBelongsToUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  const exercises = await prisma.exercise.findMany({
+    where: {
+      OR: req?.body?.exercises?.map(({ exerciseId }: Exercise) => ({
+        id: exerciseId,
+        userId: req.firebaseUid,
+      })),
+    },
+  });
+
+  if (exercises.length !== req.body.exercises.length)
+    throw new CustomError(400, 'One of the exercises do not exists.');
+
+  return next();
+};
