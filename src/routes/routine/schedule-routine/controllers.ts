@@ -85,16 +85,16 @@ const deleteScheduleRoutine = async (req: Request, res: Response) => {
     throw new CustomError(404, notFound('Schedule routine'));
   }
 
-  const existingSchedule = await prisma.scheduleRoutine.findMany({
+  const summaryRoutines = await prisma.summaryRoutine.findMany({
     where: {
       userId: req.firebaseUid,
-      routineId: scheduleRoutine.routineId,
+      scheduleRoutineId: scheduleRoutine.id,
     },
   });
 
   let deletedRoutine;
 
-  if (existingSchedule.length === 1) {
+  if (summaryRoutines.length === 0) {
     deletedRoutine = await prisma.scheduleRoutine.delete({
       where: { id },
       select: scheduleRoutineSelect,
