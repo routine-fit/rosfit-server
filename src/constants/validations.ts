@@ -1,4 +1,4 @@
-export const genderValueList = ['MALE', 'FEMALE', 'BINARY', 'PREFER_NOT_SPECIFY'];
+export const genderValueList = ['MALE', 'FEMALE', 'NON_BINARY', 'PREFER_NOT_SPECIFY'];
 
 export const muscleGroupValueList = [
   'ABDOMINAL',

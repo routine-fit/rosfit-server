@@ -2,7 +2,12 @@ import express from 'express';
 
 import controllers from './controllers';
 import scheduleRoutineRouter from './schedule-routine';
-import { validateFinishRoutine, validateRoutine, validateStartRoutine } from './validations';
+import {
+  validateExercisesBelongsToUser,
+  validateFinishRoutine,
+  validateRoutine,
+  validateStartRoutine,
+} from './validations';
 
 const router = express.Router();
 
@@ -14,8 +19,8 @@ router.put('/finish/:summaryRoutineId', validateFinishRoutine, controllers.finis
 
 router.get('/', controllers.getAllRoutines);
 router.get('/:id', controllers.getRoutineById);
-router.post('/', validateRoutine, controllers.createRoutine);
-router.put('/:id', validateRoutine, controllers.editRoutine);
+router.post('/', validateRoutine, validateExercisesBelongsToUser, controllers.createRoutine);
+router.put('/:id', validateRoutine, validateExercisesBelongsToUser, controllers.editRoutine);
 router.delete('/:id', controllers.deleteRoutine);
 
 export default router;

@@ -17,3 +17,14 @@ export const createValidationFn =
       }
     }
   };
+
+export const hasUniqueValues = <T>(
+  items: T[] = [],
+  valueExtractor: (item: T) => number | string,
+) => {
+  if (!Array.isArray(items)) return false;
+
+  const values = items.map(valueExtractor);
+
+  return new Set(values).size === values.length;
+};
