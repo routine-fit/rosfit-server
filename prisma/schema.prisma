@@ -166,14 +166,12 @@ model SummaryRoutineExerciseSerie {
 }
 
 enum MuscleGroup {
-  ABDOMINAL
-  BICEPS
-  DELTOID
-  ERECTOR_SPINAE
-  LATISSIMUS_DORSI
-  PECTORAL
-  TRAPEZIUS
-  TRICEPS
+  CHEST
+  BACK
+  ARMS
+  SHOULDERS
+  LEGS
+  ABS
 }
 
 enum Gender {
