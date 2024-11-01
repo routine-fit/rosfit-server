@@ -3,6 +3,7 @@ import * as yup from 'yup';
 import {
   genderValueList,
   heightMeasureValueList,
+  languageValueList,
   weightMeasureValueList,
 } from 'src/constants/validations';
 import { createValidationFn } from 'src/utils/validations';
@@ -16,6 +17,7 @@ export const userInfoSchema = yup.object({
     .test((dateString) => new Date(dateString).toString() !== 'Invalid Date'),
   gender: yup.string().oneOf(genderValueList).required(),
   pushNotification: yup.boolean().optional(),
+  language: yup.string().required().oneOf(languageValueList),
 });
 
 export const validateMyInformation = createValidationFn(userInfoSchema);

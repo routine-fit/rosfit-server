@@ -1,15 +1,6 @@
 export const genderValueList = ['MALE', 'FEMALE', 'NON_BINARY', 'PREFER_NOT_SPECIFY'];
 
-export const muscleGroupValueList = [
-  'ABDOMINAL',
-  'BICEPS',
-  'DELTOID',
-  'ERECTOR_SPINAE',
-  'LATISSIMUS_DORSI',
-  'PECTORAL',
-  'TRAPEZIUS',
-  'TRICEPS',
-];
+export const muscleGroupValueList = ['CHEST', 'BACK', 'ARMS', 'SHOULDERS', 'LEGS', 'ABS'];
 
 export const allowedTrainingTypes = [
   'STRENGTH',
@@ -36,3 +27,5 @@ export const daysValueList = [
   'SATURDAY',
   'SUNDAY',
 ];
+
+export const languageValueList = ['en', 'es'];

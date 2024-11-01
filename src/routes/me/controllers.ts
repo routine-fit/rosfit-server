@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 
 import { prisma } from 'src/config/prisma';
+import { baseExercises } from 'src/constants/base-exercises';
 import { CustomError } from 'src/interfaces/custom-error';
 import { getActionSuccessMsg, notFound } from 'src/utils/messages';
 
@@ -47,7 +48,7 @@ const getMe = async (req: Request, res: Response) => {
 };
 
 const createMyProfile = async (req: Request, res: Response) => {
-  const userInfoBody = req.body;
+  const { language, ...userInfoBody } = req.body;
 
   const alreadyCreated = await prisma.userInfo.findUnique({
     where: { firebaseUid: req.firebaseUid },
@@ -59,14 +60,26 @@ const createMyProfile = async (req: Request, res: Response) => {
 
   const birthDate = new Date(userInfoBody.birthDate);
 
-  const userInfo = await prisma.userInfo.create({
-    data: {
-      ...userInfoBody,
-      birthDate,
-      firebaseUid: req.firebaseUid,
-    },
-    select: userInfoSelect,
-  });
+  const transactionOperations = [
+    prisma.userInfo.create({
+      data: {
+        ...userInfoBody,
+        birthDate,
+        firebaseUid: req.firebaseUid,
+      },
+      select: userInfoSelect,
+    }),
+    prisma.exercise.createMany({
+      data: baseExercises.map(({ name, muscleGroup }) => ({
+        name: name[language as 'en' | 'es'],
+        muscleGroup,
+        userId: req.firebaseUid,
+      })),
+    }),
+  ];
+
+  const userInfo = (await prisma.$transaction(transactionOperations)).shift;
+
   if (userInfo) {
     return res.status(200).json({
       message: getActionSuccessMsg('My information', 'created'),

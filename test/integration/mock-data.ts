@@ -13,6 +13,7 @@ export const createMyInfo = {
   lastName: 'Marini',
   birthDate: '1990-11-20T15:30:00.000Z',
   gender: 'MALE',
+  language: 'en',
 };
 
 export const createTrainingPreference = {
@@ -29,16 +30,16 @@ export const updateTrainingPreference = {
 
 export const newExercise = {
   name: 'Plancha baja',
-  muscleGroup: 'PECTORAL',
+  muscleGroup: 'ABS',
 };
 
 export const newExerciseWithLinks = {
   name: 'Plancha baja con links',
-  muscleGroup: 'ABDOMINAL',
+  muscleGroup: 'ABS',
   links: [{ url: 'youtube.com/ASD123' }],
 };
 
-export const modifyExercise = { name: 'Triceps x4', muscleGroup: 'TRICEPS' };
+export const modifyExercise = { name: 'Triceps x4', muscleGroup: 'ARMS' };
 
 export const newRoutine = (exerciseId1: string, exerciseId2: string): RoutineExerciseInput => ({
   name: 'Rutina de piernas',
