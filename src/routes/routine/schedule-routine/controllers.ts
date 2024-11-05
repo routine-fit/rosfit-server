@@ -34,6 +34,33 @@ const getAllScheduleRoutines = async (req: Request, res: Response) => {
   throw new CustomError(404, notFound('schedule routines'));
 };
 
+const getScheduleRoutineById = async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  if (!id) {
+    throw new CustomError(400, 'ID parameter is required');
+  }
+
+  const scheduleRoutine = await prisma.scheduleRoutine.findUnique({
+    where: {
+      id,
+      isActive: true,
+      userId: req.firebaseUid,
+    },
+    select: scheduleRoutineSelect,
+  });
+
+  if (scheduleRoutine) {
+    return res.status(200).json({
+      message: getActionSuccessMsg('Schedule routine', 'found'),
+      data: scheduleRoutine,
+      error: false,
+    });
+  }
+
+  throw new CustomError(404, notFound('schedule routine'));
+};
+
 const createScheduleRoutine = async (req: Request, res: Response) => {
   const { routineId, day } = req.body;
 
@@ -118,6 +145,7 @@ const deleteScheduleRoutine = async (req: Request, res: Response) => {
 
 export default {
   getAllScheduleRoutines,
+  getScheduleRoutineById,
   createScheduleRoutine,
   deleteScheduleRoutine,
 };
