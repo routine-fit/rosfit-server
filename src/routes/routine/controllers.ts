@@ -253,6 +253,7 @@ const startRoutine = async (req: Request, res: Response) => {
       userId: req.firebaseUid,
       durationInMinutes: 0,
     },
+    select: summaryRoutineSelect,
   });
 
   return res.status(201).json({
