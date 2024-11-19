@@ -6,6 +6,7 @@ import { validateScheduleRoutineCreation } from './validations';
 const router = express.Router();
 
 router.get('/', controllers.getAllScheduleRoutines);
+router.get('/:id', controllers.getScheduleRoutineById);
 router.post('/', validateScheduleRoutineCreation, controllers.createScheduleRoutine);
 router.delete('/:id', controllers.deleteScheduleRoutine);
 

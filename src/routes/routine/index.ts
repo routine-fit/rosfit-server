@@ -15,6 +15,7 @@ router.use('/schedule', scheduleRoutineRouter);
 
 router.post('/start', validateStartRoutine, controllers.startRoutine);
 router.get('/summary', controllers.getSummaryRoutines);
+router.get('/summary/:id', controllers.getSummaryRoutineById);
 router.put('/finish/:summaryRoutineId', validateFinishRoutine, controllers.finishRoutine);
 
 router.get('/', controllers.getAllRoutines);

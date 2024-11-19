@@ -253,6 +253,7 @@ const startRoutine = async (req: Request, res: Response) => {
       userId: req.firebaseUid,
       durationInMinutes: 0,
     },
+    select: summaryRoutineSelect,
   });
 
   return res.status(201).json({
@@ -270,6 +271,24 @@ const getSummaryRoutines = async (req: Request, res: Response) => {
 
   return res.status(200).json({
     message: getActionSuccessMsg('Summary routines', 'found'),
+    data: summaryRoutines,
+    error: false,
+  });
+};
+
+const getSummaryRoutineById = async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  const summaryRoutines = await prisma.summaryRoutine.findMany({
+    where: {
+      id,
+      userId: req.firebaseUid,
+    },
+    select: summaryRoutineSelect,
+  });
+
+  return res.status(200).json({
+    message: getActionSuccessMsg('Summary routine', 'found'),
     data: summaryRoutines,
     error: false,
   });
@@ -365,5 +384,6 @@ export default {
   deleteRoutine,
   startRoutine,
   getSummaryRoutines,
+  getSummaryRoutineById,
   finishRoutine,
 };
