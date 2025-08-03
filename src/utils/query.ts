@@ -3,7 +3,7 @@ import { Request } from 'express';
 import { CustomError } from 'src/interfaces/custom-error';
 import { FilterType, OrderBy, QueryType } from 'src/interfaces/request';
 
-const formatFilerValue = (value: QueryType): FilterType => {
+const formatFilerValue = (value: any): FilterType => {
   if (value === 'true') {
     return true;
   }
@@ -20,7 +20,7 @@ const formatFilerValue = (value: QueryType): FilterType => {
 };
 
 const getNestedFilerChild = (
-  value: QueryType,
+  value: any,
   keys: string[],
   acum: Record<string, FilterType> = {},
 ): any => {
@@ -52,7 +52,7 @@ const formatFilters = (query: QueryType) => {
   );
 };
 
-const formatOrderBy = (orderBy: QueryType): OrderBy => {
+const formatOrderBy = (orderBy: any): OrderBy => {
   if (!Array.isArray(orderBy) && orderBy.length === 0) {
     throw new CustomError(400, 'Order by must have at least one value on the array.');
   }

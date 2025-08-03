@@ -4,18 +4,18 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "new-tab": "$(yarn bin ttab)",
-    "build": "tsc && yarn babel",
+    "new-tab": "npx ttab -t",
+    "build": "tsc && npm run babel",
     "babel": "babel dist -d ./dist/",
     "start": "nodemon",
-    "start:local": "yarn set:docker && yarn new-tab -t 'Firebase Emulators' yarn set:emulators && yarn new-tab -t 'Server' yarn nodemon",
-    "start:dev": "yarn set:docker && yarn new-tab -t 'Server' yarn nodemon",
+    "start:local": "npm run set:docker && npm run new-tab 'Firebase Emulators' npm run set:emulators && npm run new-tab 'Server' npx nodemon",
+    "start:dev": "npm run set:docker && npm run new-tab 'Server' npx nodemon",
     "start:build": "node dist/index.js",
     "type-check": "tsc --noEmit",
     "format": "prettier --write './**/*.{ts,test.ts}' --config ./.prettierrc",
     "lint": "eslint \"./**/*.{ts,test.ts}\"",
-    "lint:fix": "eslint --fix && yarn format",
-    "pre-commit": "yarn type-check && yarn lint",
+    "lint:fix": "eslint --fix && npm run format",
+    "pre-commit": "npm run type-check && npm run lint",
     "prepare": "husky install",
     "set:emulators": "firebase emulators:start",
     "set:docker": "docker-compose up -d && prisma db push",
@@ -73,6 +73,5 @@
     "tsconfig-paths": "^4.2.0",
     "ttab": "^0.9.0",
     "typescript": "5.5.4"
-  },
-  "packageManager": "yarn@4.4.1"
+  }
 }
