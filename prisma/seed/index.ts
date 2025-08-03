@@ -35,6 +35,24 @@ const FIREBASE_AUTH_EMULATOR_HOST = process.env['FIREBASE_AUTH_EMULATOR_HOST'];
 
     console.log('\x1b[36m', padMessage('⚡️ Removing data from database'));
 
+    await prisma.summaryRoutineExerciseSerie.deleteMany({});
+    console.log('\x1b[37m', padMessage('🚀 Summary RExercises Series removed'));
+    await prisma.summaryRoutineExercise.deleteMany({});
+    console.log('\x1b[37m', padMessage('🚀 Summary RExercises removed'));
+    await prisma.summaryRoutine.deleteMany({});
+    console.log('\x1b[37m', padMessage('🚀 Summary Routines removed'));
+
+    await prisma.serieRoutineExercise.deleteMany({});
+    console.log('\x1b[37m', padMessage('🚀 RExercises Series removed'));
+    await prisma.routineExercise.deleteMany({});
+    console.log('\x1b[37m', padMessage('🚀 RExercises removed'));
+
+    await prisma.scheduleRoutine.deleteMany({});
+    console.log('\x1b[37m', padMessage('🚀 Scheduled Routines removed'));
+
+    await prisma.routine.deleteMany({});
+    console.log('\x1b[37m', padMessage('🚀 Routines removed'));
+
     await prisma.exerciseLink.deleteMany({});
     console.log('\x1b[37m', padMessage('🚀 Exercise links removed'));
     await prisma.exercise.deleteMany({});
@@ -45,8 +63,6 @@ const FIREBASE_AUTH_EMULATOR_HOST = process.env['FIREBASE_AUTH_EMULATOR_HOST'];
     console.log('\x1b[37m', padMessage('🚀 Training preferences removed'));
     await prisma.userInfo.deleteMany({});
     console.log('\x1b[37m', padMessage('🚀 Users info removed'));
-    await prisma.routine.deleteMany({});
-    console.log('\x1b[37m', padMessage('🚀 Routines removed'));
 
     console.log();
 
@@ -67,6 +83,22 @@ const FIREBASE_AUTH_EMULATOR_HOST = process.env['FIREBASE_AUTH_EMULATOR_HOST'];
     const exercises = await prisma.exercise.findMany({});
     await prisma.exerciseLink.createMany({ data: data.generateExerciseLinks(exercises) });
     console.log('\x1b[37m', padMessage('🚀 Exercise links added'));
+    await prisma.routine.createMany({ data: data.routines });
+    console.log('\x1b[37m', padMessage('🚀 Routines added'));
+    await prisma.routineExercise.createMany({ data: data.routineExercises });
+    console.log('\x1b[37m', padMessage('🚀 Routines Exercises added'));
+    await prisma.serieRoutineExercise.createMany({ data: data.routineExercisesSeries });
+    console.log('\x1b[37m', padMessage('🚀 Routines Exercises Series added'));
+    await prisma.scheduleRoutine.createMany({ data: data.scheduleRoutines });
+    console.log('\x1b[37m', padMessage('🚀 Scheduled Routines added'));
+    await prisma.summaryRoutine.createMany({ data: data.summaryRoutines });
+    console.log('\x1b[37m', padMessage('🚀 Summary Routines added'));
+    await prisma.summaryRoutineExercise.createMany({ data: data.summaryRoutineExercises });
+    console.log('\x1b[37m', padMessage('🚀 Summary Routines Exercises added'));
+    await prisma.summaryRoutineExerciseSerie.createMany({
+      data: data.summaryRoutineExerciseSeries,
+    });
+    console.log('\x1b[37m', padMessage('🚀 Summary Routines Exercises Serie added'));
 
     await prisma.$disconnect();
     process.exit(0);
